@@ -1,10 +1,5 @@
-# Start from a default ubuntu image.
-FROM ubuntu:22.04
+# TODO: write Dockerfile
+# Josh has written a bunch for CTFs if you want me to
 
-# Copy/Compile my fuzzer
-COPY fuzzer /
-RUN chmod +x /fuzzer
-
-# Run it.
-CMD ["/bin/bash", "/fuzzer"]
+# It will call `python3 harness.py`, no custom libraries are needed
 
