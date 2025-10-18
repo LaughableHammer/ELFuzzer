@@ -1,6 +1,3 @@
-# ============================================================================
-#                           File format parser
-# ============================================================================
 # I'm very happy to rearchitect the design, I just 
 # don't want us to hardcode from the start
 

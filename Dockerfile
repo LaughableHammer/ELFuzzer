@@ -1,5 +1,7 @@
-# TODO: write Dockerfile
-# Josh has written a bunch for CTFs if you want me to
+FROM python:3.9-slim-bookworm
 
-# It will call `python3 harness.py`, no custom libraries are needed
+COPY fileformat.py /
+COPY harness.py /
+COPY mutator.py /
 
+CMD ["python", "-i", "harness.py"]
