@@ -18,6 +18,9 @@ class Plaintext:
 
     def encode(self, parts: list[str]) -> str:
         return parts[0]
+    
+    def fileFormat(self) -> str:
+        return 'txt'
 
 # Whoops I should've started working on plain text instead of diving straight into CSV...
 # class Csv:

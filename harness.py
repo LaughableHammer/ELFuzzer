@@ -40,7 +40,9 @@ for binary in binaries:
 which is {i//(execution_time/1000)} attempts/s to find the input \
 {mutated_input} which crashes the program")
             
-            # TODO: write output to file ie /fuzzer_output/{binary}.txt
+            # write output to file ie /fuzzer_output/{binary}.txt
+            with open(f'fuzzer_output/bad_{binary}.{file_format.fileFormat()}', 'w') as file: file.write(mutated_input)
+            
             break
 
         if i % 501 == 0 and i != 0:
