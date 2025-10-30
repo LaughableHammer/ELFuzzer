@@ -20,7 +20,7 @@ def additive(item):
     item[idx:idx] = random_bytes.encode()
     return item
 
-input_file = "./json1.txt"
+input_file = "example_inputs/json1.txt"
 corpus = []
 strats = [
     additive,
