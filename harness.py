@@ -36,6 +36,7 @@ for binary in binaries:
     with open(sample_input, 'r') as file:
         file_content = file.read()
 
+    file_format = ''
     match input_format:
         case 'passcode':
             file_format = Plaintext(file_content)
@@ -47,10 +48,13 @@ for binary in binaries:
         case 'json':
             # file_format = Json() # TODO
             continue
+        
+    if not file_format:
+        print(f"{Colours.RED}Invalid file format{Colours.RESET}")
+        continue
 
     i = 0
     while True:
-        file_format = Plaintext(file_content)
         mutated_input = file_format.encode(mutate(file_format.parse(), i))
         input_bytes = (mutated_input + "\n").encode()
         
