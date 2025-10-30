@@ -12,6 +12,7 @@ from colours import Colours
 #binaries = Path('binaries/')
 
 # Use this for testing
+# binaries = [Path('binaries/csv1'), Path('binaries/json1')]
 binaries = [Path('binaries/passcode1'), Path('binaries/csv1'), Path('binaries/json1')]
 
 start_time = time.time()
@@ -43,8 +44,7 @@ for binary in binaries:
         case 'plaintext':
             file_format = Plaintext(file_content)
         case 'csv':
-            # file_format = Csv() # TODO
-            continue
+            file_format = Csv(file_content)
         case 'json':
             # file_format = Json() # TODO
             continue
