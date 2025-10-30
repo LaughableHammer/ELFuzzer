@@ -8,9 +8,21 @@ def increment_mutation(part: str, mutation_index: int) -> str:
 
 def fmtstring_mutation(part: str, mutation_index: int) -> str:
     random.seed(mutation_index)
-    amount = random.randint(0, mutation_index // 4) # Select a random amount of %s's
-    #print(f"Sending input: %{mutation_index}$s {amount} times.")
-    return f"%{mutation_index}$s" * amount
+    
+    if not part:
+        index_to_modify = []
+    else:
+        # Select random indices to modify, quantity based on mutation_index
+        count = (mutation_index // 4) if mutation_index > 4 else 1
+        count = max(1, min(count, len(part)))
+        index_to_modify = random.sample(range(len(part)), k=count)
+    
+    for index in index_to_modify:
+        fmt = f"%{mutation_index}$s"
+        part = part[index:] + fmt + part[:index]
+        
+    #print("Sending input:", part)
+    return part
 
 mutation_strategies = [bitflip_mutation, increment_mutation, fmtstring_mutation]
 
