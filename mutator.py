@@ -1,6 +1,12 @@
 import random
 import os
 
+def duplication_mutation(part):
+    _part = part[:]
+    dupe_count = random.randint(0, 999)
+    _part = _part * dupe_count
+    return _part
+
 def additive(part: str) -> str:
     """
     Additive mutation. Adds an random number of bytes to the string, including non
@@ -82,8 +88,8 @@ def mutate(parts: list[str], mutation_count: int) -> list[str]:
 
 # for testing purposes only
 for i in range(100):
-    res = byteflip_mutation("hello")
-    print(res)
+    res = duplication_mutation(b"hello\n")
+    print(res.decode())
     print(len(res))
     
 
