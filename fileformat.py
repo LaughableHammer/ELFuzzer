@@ -26,20 +26,22 @@ class Plaintext:
 # Temporary measure for now, can make it non-static later but this makes sense, changes should be quick
 # so just let me know
 class Csv:
-    @staticmethod
-    def parse(file: str) -> list[str]:
-        """Parses a csv file given a file name, returns a list of parts to be mutated"""
-        with open(file) as f:
-            data = list(csv.reader(f))
+    def __init__(self, file):
+        self.file = file
 
-        return data
-    
-    @staticmethod
-    def encode(cols: int, parts: list[list[str]]) -> str:
+    def parse(self) -> list[list[bytes]]:
+        """Parses a csv file, returning a list of the parts that can be mutated"""
+        data = list(csv.reader(self.file))
+        self.cols = len(data[0])
+        self.rows = len(data)
+
+        return [[s.encode() for s in row] for row in data]
+        
+    def encode(self, parts: list[list[bytes]]) -> str:
         """Encodes a list of mutated parts back into a string in a csv format"""
 
         lines = []
         for row in parts:
-            lines.append(','.join(map(str, row[:cols])))
+            lines.append(','.join(map(str, row[:self.cols])))
 
         return '\n'.join(lines)
