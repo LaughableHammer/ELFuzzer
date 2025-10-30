@@ -1,5 +1,6 @@
-FROM python:3.9-slim-bookworm
+FROM python:latest
 
+COPY colours.py /
 COPY fileformat.py /
 COPY harness.py /
 COPY mutator.py /
