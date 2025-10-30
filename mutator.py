@@ -1,4 +1,5 @@
 import random
+import string
 
 def bitflip_mutation(part: str, mutation_index: int) -> str:
     return "TODO"
@@ -23,8 +24,16 @@ def fmtstring_mutation(part: str, mutation_index: int) -> str:
         
     #print("Sending input:", part)
     return part
+    
+def additive_mutation(part: str, mutation_index: int) -> str:
+    """
+    Function that adds some fun amounts of bytes
+    """
+    random_bytes = ''.join(random.choices(string.digits, k=random.randint(0, 999)))
+    m = part[:mutation_index] + random_bytes + part[mutation_index + 1:]
+    return m
 
-mutation_strategies = [bitflip_mutation, increment_mutation, fmtstring_mutation]
+mutation_strategies = [bitflip_mutation, increment_mutation, fmtstring_mutation, additive_mutation]
 
 def mutate(parts: list[str], mutation_count: int) -> list[str]:
     """Mutates one of the strings in parts based on the current mutation_count
