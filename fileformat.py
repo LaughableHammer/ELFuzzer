@@ -1,4 +1,5 @@
 import csv
+import itertools
 # I'm very happy to rearchitect the design, I just 
 # don't want us to hardcode from the start
 
@@ -26,22 +27,21 @@ class Plaintext:
 # Temporary measure for now, can make it non-static later but this makes sense, changes should be quick
 # so just let me know
 class Csv:
-    def __init__(self, file):
-        self.file = file
-
-    def parse(self) -> list[list[bytes]]:
-        """Parses a csv file, returning a list of the parts that can be mutated"""
-        data = list(csv.reader(self.file))
-        self.cols = len(data[0])
-        self.rows = len(data)
-
-        return [[s.encode() for s in row] for row in data]
+    def __init__(self, raw_content: str):
+        self.raw_content = raw_content
         
-    def encode(self, parts: list[list[bytes]]) -> str:
+        # split() is sus, if any alternative to parse file contents lmk
+        self.data = list(csv.reader(self.raw_content.split()))
+        self.cols = len(self.data[0])
+        self.rows = len(self.data)
+    
+    def parse(self) -> list[str]:
+        """Parses a csv file, returning a list of the parts that can be mutated"""
+        return [s for row in self.data for s in row]
+        
+    def encode(self, parts: list[str]) -> str:
         """Encodes a list of mutated parts back into a string in a csv format"""
-
-        lines = []
-        for row in parts:
-            lines.append(','.join(map(str, row[:self.cols])))
-
-        return '\n'.join(lines)
+        lines = [parts[i:i + self.cols] for i in range(0, len(parts), self.cols)]
+        lines = map(lambda x : ','.join(x), lines)  
+        csv = '\n'.join(lines)
+        return csv
