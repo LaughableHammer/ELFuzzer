@@ -2,9 +2,7 @@ import string
 import random
 
 def extend(item: bytearray) -> bytearray:
-    if len(item) > 10000:
-        return item
-    num_times = random.randint(0, 100)
+    num_times = random.randint(0, 5)
     try:
         return item * num_times
     except:
@@ -14,16 +12,16 @@ def extend(item: bytearray) -> bytearray:
 Function that adds some fun amounts of bytes at a random index
 """
 def additive(item: bytearray) -> bytearray:
-    if len(item) > 10000 or len(item) < 2:
+    if len(item) > 100000 or len(item) < 2:
         return item
     idx = random.randint(0, len(item) - 1)
-    random_bytes = ''.join(random.choices(string.ascii_uppercase + string.digits, k=random.randint(1, 999)))
+    random_bytes = ''.join(random.choices(string.ascii_uppercase + string.digits, k=random.randint(1, 900)))
     item[idx:idx] = random_bytes.encode()
     return item
 
 # Keep corpus persistent
 corpus = []
-csv_json_strategies = [additive, extend, extend]
+csv_json_strategies = [additive, extend]
 
 def json_csv_mutate(parts: list[str], mutation_count: int) -> list[str]:
     """
@@ -41,21 +39,26 @@ def json_csv_mutate(parts: list[str], mutation_count: int) -> list[str]:
 
     if not corpus:
         corpus.append(all_bytes)
+        
+    src = random.choice(corpus)
+    mutate_target = bytearray(src)
 
     strategy = random.choice(csv_json_strategies)
-    mutate_target = random.choice(corpus)[:]
     res = strategy(mutate_target)
 
-    corpus.append(res)
+    if len(res) > 150000:
+        res = res[:150000]
+
+    corpus.append(bytearray(res))
     
-    if len(corpus) > 10:
-        corpus = corpus[:len(corpus)//2]
-        corpus.insert(0, all_bytes)
-    corpus = [c for c in corpus if len(c) <= 10000]
+    if len(corpus) > 20:
+        corpus = corpus[10:] # keep half
+        corpus.insert(0, bytearray(all_bytes))
+    corpus = [c for c in corpus if len(c) <= 150000]
 
     # Return as list of strings (decoded lines)
     try:
-        decoded = res.decode(errors='ignore').splitlines()
+        decoded = res.decode('latin1').splitlines(keepends=True)
     except Exception:
         decoded = [joined]
     return decoded

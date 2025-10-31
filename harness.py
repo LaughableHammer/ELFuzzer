@@ -40,7 +40,7 @@ for binary in binaries:
     while True:
         execution_time = (time.time() - start_time) * 1000
         if execution_time > 60000:
-            print(f"{Colours.BOLD}{Colours.RED}60 seconds have elapsed, moving onto next binary{Colours.RESET}")
+            print(f"{Colours.BOLD}{Colours.RED}60 seconds have elapsed, moving onto next binary                                         {Colours.RESET}")
             break
 
         parts = [file_content.decode(errors='ignore')]
@@ -62,8 +62,8 @@ for binary in binaries:
         
         if command_output.returncode != 0:
             print(f"{Colours.BOLD}{Colours.GREEN}The fuzzer took {i} attempts and {math.ceil(execution_time)}ms, \
-which is {i//(execution_time/1000)} attempts/s to find the input \
-{mutated_input} which crashes the program{Colours.RESET}")
+which is {i//(execution_time/1000)} attempts/s to find the input\n \
+{Colours.CYAN}{mutated_input}{Colours.RESET}\n {Colours.BOLD}{Colours.GREEN}which crashes the program{Colours.RESET}")
             
             # write output to file ie /fuzzer_output/{binary}.txt
             with open(f'fuzzer_output/bad_{binary.name}.txt', 'wb') as file:
