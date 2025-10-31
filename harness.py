@@ -10,13 +10,13 @@ from json_csv_mutator import json_csv_mutate
 from colours import Colours
 
 # binaries are here
-#binaries = Path('binaries/')
+binaries = Path('binaries/')
 
 # Use this for testing
-binaries = [Path('binaries/passcode1'), Path('binaries/csv1'), Path('binaries/json1')]
+#binaries = [Path('binaries/passcode1'), Path('binaries/csv1'), Path('binaries/json1')]
 
-#for binary in binaries.iterdir():
-for binary in binaries:
+for binary in binaries.iterdir():
+#for binary in binaries:
     start_time = time.time()
     print(f"{Colours.UNDERLINE}Fuzzing binary: {binary.name}{Colours.RESET}")
     sample_input = Path(f'example_inputs/{binary.name}.txt')

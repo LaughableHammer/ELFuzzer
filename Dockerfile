@@ -3,6 +3,7 @@ FROM python:latest
 COPY colours.py /
 COPY fileformat.py /
 COPY harness.py /
-COPY mutator.py /
+COPY json_csv_mutator.py /
+COPY plaintext_mutator.py /
 
 CMD ["python", "-i", "harness.py"]
