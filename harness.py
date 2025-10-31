@@ -38,6 +38,7 @@ for binary in binaries.iterdir():
 
     i = 0
     while True:
+        random.seed(i)
         execution_time = (time.time() - start_time) * 1000
         if execution_time > 60000:
             print(f"{Colours.BOLD}{Colours.RED}60 seconds have elapsed, moving onto next binary                                         {Colours.RESET}")

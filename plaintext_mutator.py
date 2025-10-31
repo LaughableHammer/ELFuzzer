@@ -7,8 +7,6 @@ def increment_mutation(part: str, mutation_index: int) -> str:
     return str(mutation_index)
 
 def fmtstring_mutation(part: str, mutation_index: int) -> str:
-    random.seed(mutation_index)
-    
     if not part:
         index_to_modify = []
     else:
