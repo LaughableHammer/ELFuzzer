@@ -24,9 +24,9 @@ def fmtstring_mutation(part: str, mutation_index: int) -> str:
     #print("Sending input:", part)
     return part
 
-mutation_strategies = [bitflip_mutation, increment_mutation, fmtstring_mutation]
+plaintext_strategies = [bitflip_mutation, increment_mutation, fmtstring_mutation]
 
-def mutate(parts: list[str], mutation_count: int) -> list[str]:
+def plaintext_mutate(parts: list[str], mutation_count: int) -> str:
     """Mutates one of the strings in parts based on the current mutation_count
     
     This function alternates between strategies."""
@@ -37,15 +37,15 @@ def mutate(parts: list[str], mutation_count: int) -> list[str]:
     part_i = mutation_count % len(parts)
     part_mutation_count = mutation_count // len(parts)
 
-    mutation_strategy_index = part_mutation_count % len(mutation_strategies)
-    mutation_strategy_count = part_mutation_count // len(mutation_strategies)
+    mutation_strategy_index = part_mutation_count % len(plaintext_strategies)
+    mutation_strategy_count = part_mutation_count // len(plaintext_strategies)
     
-    mutation_strategy = mutation_strategies[mutation_strategy_index]
+    mutation_strategy = plaintext_strategies[mutation_strategy_index]
 
     mutated_parts[part_i] = mutation_strategy(parts[part_i], mutation_strategy_count)
     # print(mutation_count, p)
 
-    return mutated_parts
+    return ''.join(mutated_parts)
 
 
 
