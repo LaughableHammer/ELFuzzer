@@ -1,23 +1,19 @@
-"""Main program that the Dockerfile directly loads: controls fuzzer's operations"""
 import subprocess
 import math
 import random
 import time
 from pathlib import Path
-from fileformat import Plaintext, Csv
-from plaintext_mutator import plaintext_mutate
-from json_csv_mutator import json_csv_mutate
+from mutators import json_csv_mutator
 from colours import Colours
+import agnostic_mutator
+from parser import parser
 
 RUN_TIME_PER_BINARY = 20000 #ms
 
-def fuzzBinary(binary, sample_input):
+def fuzzBinary(binary: Path, sample_input: Path):
     start_time = time.time()
-    
-    input_format = sample_input.name[:-5] # strip extension and number
         
-    # TODO: Many more things to do such as having a timeout, 
-    # and using multiprocessing for multiple threads
+    # TODO: using multiprocessing for multiple threads
 
     # TODO: capture any other output by the binary such as stderr, library calls etc
 
@@ -33,37 +29,25 @@ def fuzzBinary(binary, sample_input):
         if execution_time > RUN_TIME_PER_BINARY:
             print(f"{Colours.BOLD}{Colours.RED}{RUN_TIME_PER_BINARY}ms have elapsed, moving onto next binary                                         {Colours.RESET}")
             break
-
-        parts = [file_content.decode(errors='ignore')]
-        if "passcode" in input_format or "plaintext" in input_format:
-            mutate = plaintext_mutate
-        elif "csv" in input_format or "json" in input_format:
-            mutate = json_csv_mutate
-        else:
-            print(f"{Colours.RED}Unknown input format: {input_format}{Colours.RESET}")
-            break
             
-        mutated_input = ''.join(mutate(parts, i))
-        input_bytes = (mutated_input + "\n").encode()
+        input_bytes = parser(sample_input, file_content, seed=i)
         
         command_output = subprocess.run(binary,
-                                        input=input_bytes, capture_output=True)
-        # TODO proper CLI UI and statistics will be displayed here -
-        # probably as a function call
+                                        input=input_bytes, capture_output=True) 
         
         if command_output.returncode != 0:
             print(f"{Colours.BOLD}{Colours.GREEN}The fuzzer took {i} attempts and {math.ceil(execution_time)}ms, \
 which is {i//(execution_time/1000)} attempts/s to find the input\n \
-{Colours.CYAN}{mutated_input}{Colours.RESET}\n {Colours.BOLD}{Colours.GREEN}which crashes the program{Colours.RESET}")
+{Colours.CYAN}{input_bytes}{Colours.RESET}\n {Colours.BOLD}{Colours.GREEN}which crashes the program{Colours.RESET}")
             
-            # write output to file ie /fuzzer_output/{binary}.txt
+            # write output to file
             with open(f'fuzzer_output/bad_{binary.name}.txt', 'wb') as file:
-                file.write(mutated_input.encode())
+                file.write(input_bytes)
             
             return True
         
         if i % 501 == 0 and i != 0:
             execution_time = (time.time() - start_time)
-            print(f"{i}: \t{i//(execution_time*1000)} attempts/s \tinput: {mutated_input[:50]}", end='\r')
+            print(f"{i}: \t{i//(execution_time*1000)} attempts/s \tinput: {input_bytes[:50]}", end='\r')
         
         i += 1
