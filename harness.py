@@ -48,6 +48,6 @@ which is {i//(execution_time/1000)} attempts/s to find the input\n \
         
         if i % 501 == 0 and i != 0:
             execution_time = (time.time() - start_time)
-            print(f"{i}: \t{i//(execution_time*1000)} attempts/s \tinput: {input_bytes[:50]}", end='\r')
+            print(f"{i}: \t{i//(execution_time)} attempts/s \tinput: {input_bytes[:50]}", end='\r')
         
         i += 1
