@@ -1,4 +1,5 @@
 import csv
+import random
 # I'm very happy to rearchitect the design, I just 
 # don't want us to hardcode from the start
 
@@ -26,12 +27,13 @@ class Plaintext:
 # Temporary measure for now, can make it non-static later but this makes sense, changes should be quick
 # so just let me know
 class Csv:
-    @staticmethod
+    
+    # @staticmethod
     def parse(file: str) -> list[str]:
         """Parses a csv file given a file name, returns a list of parts to be mutated"""
         with open(file) as f:
             data = list(csv.reader(f))
-
+        self.array = data
         return data
     
     @staticmethod
@@ -43,3 +45,59 @@ class Csv:
             lines.append(','.join(map(str, row[:cols])))
 
         return '\n'.join(lines)
+    
+    def __init__(self, file: str) -> list[str]:
+        """
+        Initiates a CSV class object, with the parsed format in itself. 
+        """
+        with open(file) as f:
+            data = list(csv.reader(f))
+        self.array = data
+
+        # todo: error check
+        self.row = len(data)
+        self.col = len(data[0])
+        return data
+
+    @staticmethod
+    def mutate_duplicate_row(obj):
+        # STUB
+        return
+    
+    @staticmethod
+    def mutation_byte_flip(obj):
+        pass
+
+    @staticmethod
+    def mutation_bit_flip(obj):
+        pass
+
+    @staticmethod
+    def mutation_expand_value(obj):
+        pass
+
+    @staticmethod
+    # Not too sure if this is cool
+    def mutation_add_column(obj):
+        pass
+
+    @staticmethod
+    # similar to duplicate row, but it just adds an entirely random row
+    def mutation_add_row(obj):
+        pass
+
+    """
+    Considerations: make the mutation function belonging to each instance
+    so that it is cleaner to call. 
+    """
+    def mutate():
+        strategies = [
+            Csv.mutate_duplicate_row
+        ]
+        chosen = random.choice(strategies)
+        chosen.mutate(self)
+
+        """
+        Pick various strategies
+        """
+
