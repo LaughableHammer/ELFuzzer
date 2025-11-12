@@ -1,18 +1,18 @@
 from pathlib import Path
-from mutators import json_csv_mutator
+from io import StringIO # allows dealing with file-like objects in memory
 import agnostic_mutator
 import globalVar
-from colours import Colours
 import json, csv
 import xml.etree.ElementTree as etree
-
+from mutators.csv_mutator import csv_mutate
+from mutators.json_csv_mutator import json_csv_mutate
+import random
 
 def decode_bytes(b: bytes) -> str:
     try:
         return b.decode("utf-8")
     except UnicodeDecodeError:
         return b.decode("latin-1", errors="ignore") # allows everything
-
 
 def detect_filetype(input_path: Path):
     if globalVar.filetype:
@@ -59,13 +59,39 @@ def detect_filetype(input_path: Path):
     print(f"Defaulting: {globalVar.filetype}")
     return globalVar.filetype
 
+def csv_to_rows(csv_text: str) -> list[list[str]]:
+    f = StringIO(csv_text)
+    reader = csv.reader(f)
+    return [row for row in reader]
+
+def rows_to_csv(rows: list[list[str]]) -> str:
+    f = StringIO()
+    writer = csv.writer(f)
+    writer.writerows(rows)
+    return f.getvalue()
+
 def json_parser(parts: list[str], seed: int) -> str:
-    mutated = json_csv_mutator.json_csv_mutate(parts, seed)
+    mutated = json_csv_mutate(parts, seed)
+    #with open('output.bin', 'ab') as f: f.write(f'======New Output======\n{''.join(mutated)}\n'.encode())
     return ''.join(mutated)
 
-def csv_parser(parts: list[str], seed: int) -> str:
-    mutated = json_csv_mutator.json_csv_mutate(parts, seed)
-    return ''.join(mutated)
+def csv_parser(text: str) -> str:
+    """Parse CSV text → mutate structured rows → return mutated CSV string."""
+    # convert into 2d array
+    try:
+        rows = csv_to_rows(text)
+    except Exception:
+        rows = [[text]]
+
+    # mutate
+    mutated_rows = csv_mutate(rows)
+
+    # convert to str
+    mutated_csv_text = rows_to_csv(mutated_rows)
+
+    #with open('output.bin', 'ab') as f: f.write(f'======New Output======\n{mutated_csv_text}\n'.encode())
+
+    return mutated_csv_text + "\n"
 
 def plaintext_parser(input: list[str], seed: int) -> str:
     return agnostic_mutator.plaintext_mutate(input, seed)
@@ -73,14 +99,15 @@ def plaintext_parser(input: list[str], seed: int) -> str:
 
 def parser(input_path: Path, file_content: bytes, seed: int) -> str:
     ft = detect_filetype(input_path)
-    #globalVar.filetype = input_path.name[:-5]
 
     # Modify inputs to the functions as desired.
     match ft:
-        case "json":
-            parts = [file_content.decode(errors='ignore')]
-            return (json_parser(parts, seed) + '\n').encode()
         case "csv":
+            text = file_content.decode(errors='ignore')
+            return (csv_parser(text) + '\n').encode()
+            # parts = [file_content.decode(errors='ignore')]
+            # return (json_parser(parts, seed) + '\n').encode()
+        case "json":
             parts = [file_content.decode(errors='ignore')]
             return (json_parser(parts, seed) + '\n').encode()
         case _:
