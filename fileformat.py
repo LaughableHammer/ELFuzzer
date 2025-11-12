@@ -101,3 +101,38 @@ class Csv:
         Pick various strategies
         """
 
+class Json:
+    def __init__(self, file:str):
+        with(file, "r") as f:
+            self._format = json.loads(f.read())
+    
+    def encode(self) -> bytearray:
+        return json.dumps(self._format)
+
+    def mutate(self):
+        """
+        Takes itself and calls one of the mutate functions
+        """
+    def _mutate_duplicate(self):
+        pass
+
+    def _mutate_change_entry(self):
+        """
+        Picks a random entry
+        """
+        pass
+
+    def _mutate_add_depth(self):
+        """
+        Adds more depth
+        """
+    def _mutate_remove_entries(self):
+        """
+        remove items entirely
+        """
+
+    def _mutate_set_null(self):
+        """
+        Makes certain entries blank
+        NOTE: Change onto new branch lol
+        """
