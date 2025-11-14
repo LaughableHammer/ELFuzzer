@@ -66,7 +66,7 @@ def csv_to_rows(csv_text: str) -> list[list[str]]:
 
 def rows_to_csv(rows: list[list[str]]) -> str:
     f = StringIO()
-    writer = csv.writer(f)
+    writer = csv.writer(f, lineterminator='\n')
     writer.writerows(rows)
     return f.getvalue()
 
@@ -97,7 +97,7 @@ def plaintext_parser(input: list[str], seed: int) -> str:
     return agnostic_mutator.plaintext_mutate(input, seed)
 
 
-def parser(input_path: Path, file_content: bytes, seed: int) -> str:
+def parser(input_path: Path, file_content: bytes, seed: int) -> bytes:
     ft = detect_filetype(input_path)
 
     # Modify inputs to the functions as desired.
