@@ -3,10 +3,13 @@ import math
 import random
 import time
 from pathlib import Path
-from mutators import json_csv_mutator
 from colours import Colours
 import agnostic_mutator
 from parser import parser
+import globalVar
+from mutators.csv_mutator import csv_mutate
+from mutators.json_mutator import mutate
+
 
 RUN_TIME_PER_BINARY = 60000 #ms
 
@@ -21,17 +24,26 @@ def fuzzBinary(binary: Path, sample_input: Path):
     with open(sample_input, 'rb') as file:
         file_content = file.read()
 
+    """kickstart the mutation process by placing the sample content into Corpus."""
+    parsed_input = parser(sample_input, file_content, seed=i)
+    globalVar.corpus.append(parsed_input)
+
     i = 0
     while True:
         random.seed(i)
-        
         execution_time = (time.time() - start_time) * 1000
         if execution_time > RUN_TIME_PER_BINARY:
             print(f"{Colours.BOLD}{Colours.RED}{RUN_TIME_PER_BINARY}ms have elapsed, moving onto next binary                                         {Colours.RESET}")
             break
             
-        input_bytes = parser(sample_input, file_content, seed=i)
-        
+        # potentially relegate to external file:
+        match globalVar.filetype:
+            case "csv":
+                input_bytes = csv_mutate()
+            case "json":
+                input_bytes = mutate()
+
+        input_bytes = (input_bytes + '\n').encode(errors='ignore')
         command_output = subprocess.run(binary,
                                         input=input_bytes, capture_output=True) 
         
