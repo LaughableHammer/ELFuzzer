@@ -1,6 +1,6 @@
 import random
 import globalVar
-from .common_mutators import additive
+from .common_mutators import additive, extend
 import string
 
 def mutate_cell(rows: list[list[str]]) -> list[list[str]]:
@@ -49,7 +49,13 @@ def csv_mutate(rows: list[list[str]]) -> list[list[str]]:
         for _ in range(num_dups):
             mutated.insert(random.randint(1, len(mutated)), row_to_dup.copy())
 
-    globalVar.corpus.append(mutated)
+    if len(mutated) > 150000:
+        mutated = mutated[:150000]
+
+    if random.random() < 0.1:
+        globalVar.corpus.insert(0, mutated)
+    else:
+        globalVar.corpus.append(mutated)
 
     #print(f"[DEBUG] rows={len(mutated)}, total_cells={sum(len(r) for r in mutated)}, avg_cell_len={sum(len(c) for r in mutated for c in r) / max(1, sum(len(r) for r in mutated)):.2f}")
 
