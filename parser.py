@@ -6,7 +6,8 @@ import json, csv
 import xml.etree.ElementTree as etree
 from mutators.csv_mutator import csv_mutate
 from mutators.json_csv_mutator import json_csv_mutate
-import random
+from mutators.xml_mutator import xml_mutate
+from lxml import etree
 
 def decode_bytes(b: bytes) -> str:
     try:
@@ -93,6 +94,11 @@ def csv_parser(text: str) -> str:
 
     return mutated_csv_text + "\n"
 
+def xml_parser(_input: str) -> str:
+    tree = etree.fromstring(_input)
+    mutated = xml_mutate(tree)
+    return (etree.tostring(mutated).decode())
+
 def plaintext_parser(input: list[str], seed: int) -> str:
     return agnostic_mutator.plaintext_mutate(input, seed)
 
@@ -110,6 +116,9 @@ def parser(input_path: Path, file_content: bytes, seed: int) -> bytes:
         case "json":
             parts = [file_content.decode(errors='ignore')]
             return (json_parser(parts, seed) + '\n').encode()
+        case "xml":
+            parts = file_content.decode(errors='ignore')
+            return (xml_parser(parts) + '\n').encode()
         case _:
             # assume plaintext if no match
             parts = [file_content.decode(errors='ignore')]
