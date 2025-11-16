@@ -17,7 +17,7 @@ results = []
 for binary in binaries.iterdir():
 #for binary in binaries:
     globalVar.init() # Reset global values
-    print(f"{Colours.UNDERLINE}Fuzzing binary: {binary.name}{Colours.RESET}")
+    print(f"{Colours.UNDERLINE}\nFuzzing binary: {binary.name}{Colours.RESET}")
     
     sample_input = Path(f'example_inputs/{binary.name}.txt')
     if not sample_input.exists():
