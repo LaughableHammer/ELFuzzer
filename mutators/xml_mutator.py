@@ -5,10 +5,14 @@ import random
 from lxml import etree
 import globalVar
 import copy
+import string
 
-def xmL_mutate(data):
+def util_gen_random_str(len = 5):
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=len))
+
+def xmL_mutate(tree):
     if not globalVar.corpus:
-        globalVar.corpus.append(data)
+        globalVar.corpus.append(tree)
     elif len(globalVar.corpus) > 20:
         globalVar.corpus = globalVar.corpus[10:]
     
@@ -17,73 +21,132 @@ def xmL_mutate(data):
 
     mutation_strategies = [
         add_node,
-        del_node #todo: include all
+        del_node,
+        change_node,
+        change_attr,
+        change_root,
+        change_tag
     ]
 
+    # Consider if there should be a few rounds of mutation?
     mutated = random.choice(mutation_strategies)(mutated)
 
     if random.random() < 0.1:
         globalVar.corpus.insert(0, mutated)
     else:
         globalVar.corpus.append(mutated)
-        
+
     return mutated
 
-def add_node(data):
+def add_node(tree):
     """
-    Add a node with arbitrary value
+    Add a node with arbitrary value, tag and class
     """
-    pass
+    new = etree.Element(util_gen_random_str)
+    random_idx = random.randint(0, len(tree))
+    tree[random_idx] = new
+    return tree
 
-def del_node(data):
+def del_node(tree):
     """
-    Delete a node
+    Delete a percentage number of node, as long as 
+    they are not the root noded
     """
-    pass
+    itr = int(len(tree) * 0.3)
+    if itr < 1:
+        itr = random.randint(0, 5)
+    to_delete = random.sample(tree, itr)
 
-def change_node(data):
+    for node in to_delete:
+        parent = node.getparent()
+        parent.remove(node)
+    
+    return tree
+
+def change_node(tree):
     """
     Change the node content
     """
-    pass
+    itr = int(len(tree) * 0.3)
+    if itr < 1:
+        itr = random.randint(0, 5)
+    
+    to_change = random.sample(tree, itr)
+    for node in to_change:
+        node.text = util_gen_random_str(20)
 
-def change_attr(data):
+def add_attr(tree):
+    """
+    Add an attribute to an XML object. 
+    Consider whether this would be artbirary or predefined attributes
+    """
+    node = random.choice(tree)
+    node.attrib[util_gen_random_str()] = util_gen_random_str()
+    return tree
+
+def change_attr(tree):
     """
     Change the attributes of some XML objects, other that root node.
-    """
-    node = random.chocie(data)
-    if not node.attrib:
-        return
-    key = random.choice(list(node.attrib.keys()))
-    node.attrib[key] = "some-value" 
-    pass
 
-def remove_attr(data):
+    Most likely will include custom logic to handle websites and urls for hrefs or what not
+        - This case can simply be just adding random printable bytes
+    """
+    node = random.choice(tree)
+    if not node.attrib:
+        return tree
+    
+    key = random.choice(list(node.attrib.keys()))
+    node.attrib[key] = util_gen_random_str(10)
+    return tree
+
+def remove_attr(tree):
     """
     Remove the attribute of random objects
     """
-    pass
+    node = random.choice(tree)
+    key_list = list(node.attrib.keys())
+    node.attrib.pop(random.choice(key_list), None)
+    return tree
 
-def change_tag(data):
+def change_tag(tree):
     """
     Changes the tag of a node
     """
-    pass
+    itr = int(len(tree) * 0.3)
+    if itr < 1:
+        itr = random.randint(0, 5)
+    to_change = random.sample(tree, itr)
 
-def change_root(data):
+    for node in to_change:
+        node.tag = util_gen_random_str()
+    
+    return tree
+
+def change_root(tree):
     """
     Change the root node of the tree to be another string.
     Should be used rarely
     """
-    pass
+    root = list(tree.itr())[0]
+    root.tag = util_gen_random_str()
+    return tree
 
-def swap_order(data):
+def swap_order(tree):
     """
     Switches the order between two or more nodes
     """
+    a, b = random.sample(tree, 2)
+    a_parent = a.getparent()
+    b_parent = b.getparent()
 
-def debug(data):
-    tree = etree.fromstring(data)
+    a_idx = a_parent.index(a)
+    b_idx = b_parent.index(b)
+
+    a_parent[a_idx] = b
+    b_parent[b_idx] = a
+
+def debug(tree):
+    tree = etree.fromstring(tree)
 
     for node in tree.iter(): # this is likely how the tree would be iterated
         print(node)
