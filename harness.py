@@ -37,43 +37,17 @@ def forkserver_main(read_fd: int, write_fd: int, binary: Path):
         data = os.read(read_fd, int.from_bytes(length_bytes, 'little'))
         if not data:
             break
-            
-        # pipe for stderr
-        r_stderr, w_stderr = os.pipe()
 
         pid = os.fork()
         if pid == 0:
             # Child
-            
-            # reallocate fd of our pipe
-            os.dup2(w_stderr, 2)
-
-            # close unused in child fd's
-            os.close(r_stderr)
-            os.close(w_stderr)
-
-            # exec target
-            os.execvp(str(binary), [str(binary)])
-
-            os._exit(1)  # only if exec failed
+            result = subprocess.run(binary, input=data, capture_output=True)
+            os._exit(result.returncode)
 
         # Parent
-        os.close(w_stderr)
-        
         _, status = os.waitpid(pid, 0)
 
-        stderr = os.read(r_stderr, 1000)
-        os.close(r_stderr)
-
-        # format output:
-        # status (4 bytes) + stderr_len (4 bytes) + stderr data
-        out = bytearray()
-        out += status.to_bytes(4, "little")
-        out += len(stderr).to_bytes(4, "little")
-        out += stderr
-
-        os.write(write_fd, out)
-
+        os.write(write_fd, status.to_bytes(4, 'little'))
     
     sys.exit(0)
 
@@ -85,15 +59,11 @@ def try_fuzz(write_fd: int, read_fd: int, data: bytes):
 
     status = int.from_bytes(os.read(read_fd, 4), 'little')
 
-    # read stderr len + data
-    stderr_len = int.from_bytes(os.read(read_fd, 4), 'little')
-    stderr = os.read(read_fd, stderr_len)
-
     exitcode = os.WEXITSTATUS(status)
     signalled = os.WIFSIGNALED(status)
     signo = os.WTERMSIG(status) if signalled else None
 
-    return exitcode, signo, stderr
+    return exitcode, signo
 
 def init_forkserver(binary: Path):
     """Starts a persistent forkserver"""
@@ -141,29 +111,29 @@ def fuzzBinary(binary: Path, sample_input: Path):
             
         input_bytes = parser(sample_input, file_content, seed=i)
         
-        exitcode, signo, stderr = try_fuzz(send_fd, recv_fd, input_bytes)
-        # if exitcode != 0 or signo is not None:
-        #     elapsed = (time.time() - start_time) * 1000
-        #     print("\n--- CRASH FOUND ---")
-        #     print(f"Seed: {i}")
-        #     print(f"Runtime: {elapsed:.2f}ms")
-        #     print(f"Exit code: {exitcode}")
-        #     print(f"Signal: {signo}")
-        #     print(f"Input (first 200 bytes): {input_bytes[:200]}")
-        #     break
+        exitcode, signo = try_fuzz(send_fd, recv_fd, input_bytes)
+        if exitcode != 0 or signo is not None:
+            elapsed = (time.time() - start_time) * 1000
+            print("\n--- CRASH FOUND ---")
+            print(f"Seed: {i}")
+            print(f"Runtime: {elapsed:.2f}ms")
+            print(f"Exit code: {exitcode}")
+            print(f"Signal: {signo}")
+            print(f"Input (first 200 bytes): {input_bytes[:200]}")
+            break
         
-        if exitcode < 0:
-            if ERRORS_EXPECTED[exitcode] not in stderr:
-                print(f"{Colours.MAGENTA}stderr output does not match error code, ignoring{Colours.RESET}")
-                continue
-            print(f"{Colours.BOLD}{Colours.GREEN}The fuzzer took {i} attempts and {math.ceil(execution_time)}ms, \
-which is {i//(execution_time/1000)} attempts/s to find the input\n \
-{Colours.CYAN}{input_bytes[:200]}{Colours.RESET}\n {Colours.BOLD}{Colours.GREEN}which crashes the program{Colours.RESET}")
-            print(f"{Colours.YELLOW}Error {exitcode} Detected: {stderr}{Colours.RESET}")
+#         if exitcode < 0:
+#             if ERRORS_EXPECTED[command_output.returncode] not in command_output.stderr:
+#                 print(f"{Colours.MAGENTA}stderr output does not match error code, ignoring{Colours.RESET}")
+#                 continue
+#             print(f"{Colours.BOLD}{Colours.GREEN}The fuzzer took {i} attempts and {math.ceil(execution_time)}ms, \
+# which is {i//(execution_time/1000)} attempts/s to find the input\n \
+# {Colours.CYAN}{input_bytes[:200]}{Colours.RESET}\n {Colours.BOLD}{Colours.GREEN}which crashes the program{Colours.RESET}")
+#             print(f"{Colours.YELLOW}Error {command_output.returncode} Detected: {command_output.stderr.strip()}{Colours.RESET}")
             
-            # write output to file
-            with open(f'fuzzer_output/bad_{binary.name}.txt', 'wb') as file:
-                file.write(input_bytes)
+#             # write output to file
+#             with open(f'fuzzer_output/bad_{binary.name}.txt', 'wb') as file:
+#                 file.write(input_bytes)
             
             return True
         
