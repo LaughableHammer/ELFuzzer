@@ -21,7 +21,7 @@ def detect_filetype(input_path: Path):
     # Read once
     text = decode_bytes(input_path.read_bytes()).strip()
 
-    # Check JSON (only accept dicts or lists, not primitives like 1, "abc", etc.)
+    # Check JSON (only accept dicts or lists)
     if text and text[0] in ('{', '['):
         try:
             parsed = json.loads(text)
@@ -36,7 +36,7 @@ def detect_filetype(input_path: Path):
     try:
         with open(input_path, 'r', newline='', encoding='utf-8', errors='ignore') as f:
             sample = f.read(1024)
-            if '\n' in sample:  # must have multiple lines to be plausible CSV
+            if '\n' in sample and ',' in sample:  # must have multiple lines to be plausible CSV
                 csv.Sniffer().sniff(sample)
                 globalVar.filetype = 'csv'
                 print(f"File type detected: {globalVar.filetype}")
