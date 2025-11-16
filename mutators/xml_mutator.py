@@ -42,7 +42,7 @@ def add_node(tree):
     """
     Add a node with arbitrary value, tag and class
     """
-    new = etree.Element(util_gen_random_str)
+    new = etree.Element(util_gen_random_str())
     random_idx = random.randint(0, len(tree))
     tree[random_idx] = new
     return tree
