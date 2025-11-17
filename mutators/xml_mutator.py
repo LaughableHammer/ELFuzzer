@@ -6,11 +6,12 @@ from lxml import etree
 import globalVar
 import copy
 import string
+from mutators.common_mutators import primitive_mutate
 
-def util_gen_random_str(len = 5):
-    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=len))
+def util_gen_random_str(len = 999):
+    return ''.join(random.choices(string.ascii_uppercase, k=len))
 
-def xmL_mutate(tree):
+def xml_mutate(tree):
     if not globalVar.corpus:
         globalVar.corpus.append(tree)
     elif len(globalVar.corpus) > 20:
@@ -22,20 +23,23 @@ def xmL_mutate(tree):
     mutation_strategies = [
         add_node,
         del_node,
-        change_node,
+        # change_node, #broken
         change_attr,
         change_root,
         change_tag
     ]
 
     # Consider if there should be a few rounds of mutation?
-    mutated = random.choice(mutation_strategies)(mutated)
+    chosen = random.choice(mutation_strategies)
+    # print(chosen)
+    mutated = chosen(mutated)
 
     if random.random() < 0.1:
         globalVar.corpus.insert(0, mutated)
     else:
         globalVar.corpus.append(mutated)
-
+    
+    # print(mutated)
     return mutated
 
 def add_node(tree):
@@ -43,8 +47,9 @@ def add_node(tree):
     Add a node with arbitrary value, tag and class
     """
     new = etree.Element(util_gen_random_str())
-    random_idx = random.randint(0, len(tree))
-    tree[random_idx] = new
+    random_idx = random.randint(0, max(0, len(tree) - 1))
+    for _ in range(0, 50):
+        tree.insert(random_idx, new)
     return tree
 
 def del_node(tree):
@@ -54,8 +59,8 @@ def del_node(tree):
     """
     itr = int(len(tree) * 0.3)
     if itr < 1:
-        itr = random.randint(0, 5)
-    to_delete = random.sample(tree, itr)
+        itr = random.randint(0, len(list(tree)))
+    to_delete = random.sample(list(tree), itr)
 
     for node in to_delete:
         parent = node.getparent()
@@ -69,11 +74,13 @@ def change_node(tree):
     """
     itr = int(len(tree) * 0.3)
     if itr < 1:
-        itr = random.randint(0, 5)
+        itr = random.randint(1, 5)
     
-    to_change = random.sample(tree, itr)
+    to_change = random.sample(list(tree), itr)
     for node in to_change:
-        node.text = util_gen_random_str(20)
+        # print(node)
+        print(node.text.encode())
+        node.text = primitive_mutate(bytearray(node.text, "utf-8"))
 
 def add_attr(tree):
     """
@@ -91,12 +98,13 @@ def change_attr(tree):
     Most likely will include custom logic to handle websites and urls for hrefs or what not
         - This case can simply be just adding random printable bytes
     """
-    node = random.choice(tree)
+    node = random.choice(list(tree.iter()))
+
     if not node.attrib:
         return tree
     
-    key = random.choice(list(node.attrib.keys()))
-    node.attrib[key] = util_gen_random_str(10)
+    key = random.choice(list(node.attrib.keys())) # debugging purposes, this is commented out
+    node.attrib[key] = primitive_mutate(bytearray(node.attrib[key], "utf-8"))
     return tree
 
 def remove_attr(tree):
@@ -114,8 +122,8 @@ def change_tag(tree):
     """
     itr = int(len(tree) * 0.3)
     if itr < 1:
-        itr = random.randint(0, 5)
-    to_change = random.sample(tree, itr)
+        itr = random.randint(0, len(list(tree)))
+    to_change = random.sample(list(tree), itr)
 
     for node in to_change:
         node.tag = util_gen_random_str()
@@ -127,7 +135,7 @@ def change_root(tree):
     Change the root node of the tree to be another string.
     Should be used rarely
     """
-    root = list(tree.itr())[0]
+    root = list(tree.iter())[0]
     root.tag = util_gen_random_str()
     return tree
 

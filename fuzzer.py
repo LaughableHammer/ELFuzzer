@@ -8,14 +8,15 @@ import globalVar
 binaries = Path('binaries/')
 
 # Use this for testing
-#binaries = [Path('binaries/passcode1'), Path('binaries/csv1'), Path('binaries/json1'), Path('binaries/csv2')]
+# binaries = [Path('binaries/passcode1'), Path('binaries/csv1'), Path('binaries/json1'), Path('binaries/csv2')]
+binaries = [Path('binaries/xml2')]
 
 overall_start = time.time()
 
 results = []
 
-for binary in binaries.iterdir():
-#for binary in binaries:
+# for binary in binaries.iterdir():
+for binary in binaries:
     globalVar.init() # Reset global values
     print(f"{Colours.UNDERLINE}Fuzzing binary: {binary.name}{Colours.RESET}")
     
