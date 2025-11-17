@@ -22,9 +22,9 @@ def xml_mutate(tree):
 
     mutation_strategies = [
         add_node,
-        # del_node,
+        del_node,
         # change_node, #broken
-        # change_attr,
+        change_attr,
         # change_root,
         # change_tag
     ]
@@ -44,7 +44,7 @@ def add_node(tree):
     """
     Add a node with arbitrary value, tag and class
     """
-    for _ in range(0, 5):
+    for _ in range(0, 50):
         new = etree.Element(util_gen_random_str(10))
         new.text = util_gen_random_str(10)
         random_idx = random.randint(0, max(0, len(tree) - 1))
@@ -78,8 +78,10 @@ def change_node(tree):
     to_change = random.sample(list(tree), itr)
     for node in to_change:
         # print(node)
-        print(node.text.encode())
+        if len(node.text.strip()) < 0:
+            continue
         node.text = primitive_mutate(bytearray(node.text, "utf-8"))
+    return tree
 
 def add_attr(tree):
     """
@@ -87,7 +89,7 @@ def add_attr(tree):
     Consider whether this would be artbirary or predefined attributes
     """
     node = random.choice(tree)
-    node.attrib[util_gen_random_str()] = util_gen_random_str()
+    node.attrib[util_gen_random_str()] = primitive_mutate(util_gen_random_str())
     return tree
 
 def change_attr(tree):
@@ -102,7 +104,7 @@ def change_attr(tree):
     if not node.attrib:
         return tree
     
-    key = random.choice(list(node.attrib.keys())) # debugging purposes, this is commented out
+    key = random.choice(list(node.attrib.keys()))
     node.attrib[key] = primitive_mutate(bytearray(node.attrib[key], "utf-8"))
     return tree
 
@@ -151,6 +153,12 @@ def swap_order(tree):
 
     a_parent[a_idx] = b
     b_parent[b_idx] = a
+
+def add_depth(tree):
+    """
+    Adds some depth to the tree
+    """
+    pass
 
 def debug(tree):
     tree = etree.fromstring(tree)
