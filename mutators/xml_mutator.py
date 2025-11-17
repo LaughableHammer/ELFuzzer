@@ -22,11 +22,11 @@ def xml_mutate(tree):
 
     mutation_strategies = [
         add_node,
-        del_node,
+        # del_node,
         # change_node, #broken
-        change_attr,
-        change_root,
-        change_tag
+        # change_attr,
+        # change_root,
+        # change_tag
     ]
 
     # Consider if there should be a few rounds of mutation?
@@ -38,17 +38,16 @@ def xml_mutate(tree):
         globalVar.corpus.insert(0, mutated)
     else:
         globalVar.corpus.append(mutated)
-    
-    # print(mutated)
     return mutated
 
 def add_node(tree):
     """
     Add a node with arbitrary value, tag and class
     """
-    new = etree.Element(util_gen_random_str())
-    random_idx = random.randint(0, max(0, len(tree) - 1))
-    for _ in range(0, 50):
+    for _ in range(0, 5):
+        new = etree.Element(util_gen_random_str(10))
+        new.text = util_gen_random_str(10)
+        random_idx = random.randint(0, max(0, len(tree) - 1))
         tree.insert(random_idx, new)
     return tree
 

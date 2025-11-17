@@ -27,7 +27,7 @@ def additive(item: bytearray) -> bytearray:
     if len(item) > 10000 or len(item) < 2:
         return item
     idx = random.randint(0, len(item) - 1)
-    random_bytes = ''.join(random.choices(string.ascii_uppercase, k=random.randint(1, 9900)))
+    random_bytes = ''.join(random.choices(string.ascii_uppercase, k=random.randint(1, 990)))
     item[idx:idx] = random_bytes.encode()
     return item
 
