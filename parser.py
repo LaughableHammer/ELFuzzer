@@ -72,9 +72,9 @@ def rows_to_csv(rows: list[list[str]]) -> str:
     return f.getvalue()
 
 def json_parser(text: str) -> str:
-    json_dict = flatten(json.loads(text))
+    json_dict = flatten(json.loads(text), reducer="dot")
     mutated = mutate(json_dict)
-    return unflatten(mutated, splitter="dot")
+    return json.dumps(unflatten(mutated, splitter="dot"))
 
 def csv_parser(text: str) -> str:
     """Parse CSV text → mutate structured rows → return mutated CSV string."""

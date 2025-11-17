@@ -19,6 +19,8 @@ def mutate(data: dict) -> dict:
         globalVar.corpus.append(data)
     elif len(globalVar.corpus) > 20:
         globalVar.corpus = globalVar.corpus[10:]
+    elif random.random() < 0.3: #0.3 chance of adding a fresh copy
+        globalVar.corpus.append(data)
 
     src = copy.deepcopy(random.choice(globalVar.corpus))
     strategies = [
@@ -27,7 +29,7 @@ def mutate(data: dict) -> dict:
         _mutate_change_key,
         _mutate_add_depth,
         _mutate_add_branch,
-        _mutate_add_entry,
+        _mutate_add_entry,    
         _mutate_remove_entries,
         _mutate_set_null,
     ]
@@ -81,15 +83,19 @@ def _mutate_change_entry(data: list) -> list:
             for _ in range(len(data[path]) + random.randint(0, 5)):
                 # value.append(random.randbytes(5))
                 value.append(util_gen_random_str(10))
-        else:
+        elif isinstance(data[path], str):
             # value = random.randbytes(10) # for now bytes do not work and will crash.
-            value = util_gen_random_str(100)
+            value = util_gen_random_str(10)
+        elif isinstance(data[path], int):
+            value = random.randint(0, 999)
+        else:
+            value = util_gen_random_str(10)
         data[path] = value
     # determine if a return object is wanted or just change in place
     return data
            
 def _mutate_add_depth(data):
-    pass
+    return data
     """
     Make the JSON object deeper, using random generated keys (or duplicate)
     Values will be set to some random generic alphanumerical string
@@ -126,7 +132,9 @@ def _mutate_add_branch(data):
                 path = nonce
             else:
                 path = path + "." + nonce
-        data[path] = {}
+        data[path] = {
+            util_gen_random_str(): util_gen_random_str()
+        }
     return data
 
 def _mutate_add_entry(data):
