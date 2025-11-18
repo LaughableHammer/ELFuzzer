@@ -7,6 +7,7 @@ import xml.etree.ElementTree as etree
 from mutators.csv_mutator import csv_mutate
 from mutators.json_mutator import mutate
 from flatten_dict import flatten, unflatten
+from mutators.jpg_mutator import jpg_mutate
 import random
 
 def decode_bytes(b: bytes) -> str:
@@ -20,7 +21,8 @@ def detect_filetype(input_path: Path):
         return globalVar.filetype
 
     # Read once
-    text = decode_bytes(input_path.read_bytes()).strip()
+    input_bytes = input_path.read_bytes()
+    text = decode_bytes(input_bytes).strip()
 
     # Check JSON (only accept dicts or lists)
     if text and text[0] in ('{', '['):
@@ -54,6 +56,11 @@ def detect_filetype(input_path: Path):
             return globalVar.filetype
         except Exception:
             pass
+
+    if input_bytes.startswith(b"\xff\xd8\xff"):
+        globalVar.filetype = 'jpg'
+        return globalVar.filetype
+
 
     # Default to plaintext
     globalVar.filetype = 'plaintext'
@@ -97,7 +104,6 @@ def csv_parser(text: str) -> str:
 def plaintext_parser(input: list[str], seed: int) -> str:
     return agnostic_mutator.plaintext_mutate(input, seed)
 
-
 def parser(input_path: Path, file_content: bytes, seed: int) -> bytes:
     ft = detect_filetype(input_path)
 
@@ -111,6 +117,8 @@ def parser(input_path: Path, file_content: bytes, seed: int) -> bytes:
         case "json":
             parts = file_content.decode(errors='ignore')
             return (json_parser(parts) + '\n').encode()
+        case "jpg":
+            return jpg_mutate(file_content, seed)
         case _:
             # assume plaintext if no match
             parts = [file_content.decode(errors='ignore')]
