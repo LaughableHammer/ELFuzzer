@@ -8,6 +8,7 @@ from mutators.csv_mutator import csv_mutate
 from mutators.json_mutator import mutate
 from flatten_dict import flatten, unflatten
 from mutators.jpg_mutator import jpg_mutate
+from colours import Colours
 import random
 
 def decode_bytes(b: bytes) -> str:
@@ -118,7 +119,11 @@ def parser(input_path: Path, file_content: bytes, seed: int) -> bytes:
             parts = file_content.decode(errors='ignore')
             return (json_parser(parts) + '\n').encode()
         case "jpg":
-            return jpg_mutate(file_content)
+            try:
+                return jpg_mutate(file_content)
+            except Exception as e:
+                print(f"{Colours.BOLD}{Colours.RED} Exception in jpg_mutate: `{e}` {Colours.RESET}")
+                return file_content
         case _:
             # assume plaintext if no match
             parts = [file_content.decode(errors='ignore')]
