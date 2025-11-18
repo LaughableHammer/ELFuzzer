@@ -1,31 +1,7 @@
 import random
 import globalVar
 from .common_mutators import additive, extend
-import string
-
-# def mutate_cell(rows: list[list[str]]) -> list[list[str]]:
-#     if not rows or len(rows) <= 1:
-#         return rows
-
-#     new_rows = [r[:] for r in rows]
-
-#     # randomly mutate 1 cell (excluding header row)
-#     cell_row = random.randint(1, len(new_rows) - 1)
-#     cell_col = random.randint(0, len(new_rows[0]) - 1)
-
-#     cell = new_rows[cell_row][cell_col]
-
-#     if not cell:
-#         return rows
-
-#     cell_bytes = bytearray(cell, 'latin1', errors='ignore')
-
-#     cell_bytes = additive(cell_bytes)
-#     new_rows[cell_row][cell_col] = cell_bytes.decode('latin1', errors='ignore')
-
-#     return new_rows
-
-# csv_strategies = [mutate_cell]
+import copy
 
 class JpgSegment:
     def __init__(self, marker: bytes, data: bytes):
@@ -33,9 +9,20 @@ class JpgSegment:
         self.data = data
 
     def encode(self, size=None):
+        if self.marker == b"\xff\xda":
+            return self.marker + self.data
+
         if size == None:
-            size = 2 + len(self.data)
+            # TODO: the strucutre is objectively wrong if we have to mod 255
+            size = (2 + len(self.data)) % 255
         return self.marker + size.to_bytes(2, 'big') + self.data
+
+    def __repr__(self):
+        return (
+            f"JpgSegment(marker={self.marker!r}, "
+            f"data_len={len(self.data)}, "
+            f"data_preview={self.data[:20]!r}...)"
+        )
 
 
 def jpg_parse(file_content: bytes) -> list[JpgSegment]:
@@ -53,61 +40,109 @@ def jpg_parse(file_content: bytes) -> list[JpgSegment]:
             data = file_content[i+2:len(file_content)-2]
             i = len(file_content)-2
         else:
-            size = int.from_bytes(file_content[i:2:i+4], 'big')
-            data = file_content[i+4:i+2+size+1]
-            i = i+2+size+1
+            size = int.from_bytes(file_content[i+2:i+4], 'big')
+            data = file_content[i+4:i+2+size]
+            i = i+2+size
         
         segments.append(JpgSegment(marker, data))
 
     return segments
 
-def jpg_mutate(file_content: bytes, seed: int) -> bytes:
-    segments = jpg_parse(file_content)
+def _mutate_duplicate(segments: list[JpgSegment]) -> list[JpgSegment]:
+    to_mutate = random.randint(1, len(segments) // 10 + 1)
+    if random.random() < 0.01:
+        to_mutate = 20000
 
-    # cloning segments
+    random_location = random.random() < 0.5
 
-    # plaintext mutation within segments
+    for _ in range(to_mutate):
+        index = random.randint(0, len(segments) - 1)
+        if random_location:
+            segments.insert(random.randint(0, len(segments) - 1), segments[index])
+        else:
+            segments.insert(index + 1, segments[index])
 
-    # changing markers within segments
+    return segments
 
-    # try encoding it with incorrect lengths
+def _mutate_change_marker(segments: list[JpgSegment]) -> list[JpgSegment]:
+    to_mutate = random.randint(1, len(segments) // 3 + 1)
 
-    
+    for _ in range(to_mutate):
+        marker = random.randint(0xffc0, 0xffff).to_bytes(2, 'big')
+        random.choice(segments).marker = marker
 
-    encoded_jpg = b"\xff\xd8" + b''.join([segment.encode() for segment in segments]) + b"\xff\xd9"
-    return encoded_jpg
+    return segments
 
+def _mutate_remove_segment(segments: list[JpgSegment]) -> list[JpgSegment]:
+    segments.remove(random.choice(segments))
+    return segments
 
-def csv_mutate(rows: list[list[str]]) -> list[list[str]]:
-    if not rows:
-        return rows
-    
+def _mutate_segment(segments: list[JpgSegment]) -> list[JpgSegment]:
+    # this is structure agnostic, will use a common_mutator
+    # TODO: implement
+    return segments
+
+# TODO: will generate random data half the time, and may draw upon segments 
+# from other real example images the other half?
+# def _mutate_add_segment(segments: list[JpgSegment]) -> list[JpgSegment]:
+#     return segments
+
+# TODO: consider structure inside of segments?
+
+def _mutate_lengths(segments: list[JpgSegment]) -> list[JpgSegment]:
+    """Since this is malformed input, our code is in jpg_mutate"""
+    return segments
+
+# mostly copy pasted from json_mutator
+def jpg_mutate(sample_input: bytes) -> bytes:
     if not globalVar.corpus:
-        globalVar.corpus.append(rows)
+        globalVar.corpus.append(sample_input)
     elif len(globalVar.corpus) > 20:
         globalVar.corpus = globalVar.corpus[10:]
+    elif random.random() < 0.3: #0.3 chance of adding a fresh copy
+        globalVar.corpus.append(sample_input)
 
-    src = random.choice(globalVar.corpus)
-    mutated = [r.copy() for r in src]
+    # TODO: we need to refactor corpus stuff, but also the base image should be used at least like 50% of the time tbh imo because its so easy to make mistakes breaking the structure 
 
-    strategy = random.choice(csv_strategies)
-    mutated = strategy(mutated)
+    # There's a chance it only has 1 segment
+    segments = []
+    while len(segments) == 0:
+        src = copy.deepcopy(random.choice(globalVar.corpus))
+        segments = jpg_parse(src)
 
-    # occasionally duplicate some rows
-    if mutated and random.random() < 0.1:
-        row_to_dup = random.choice(rows)
-        num_dups = random.randint(1, 5)
-        for _ in range(num_dups):
-            mutated.insert(random.randint(1, len(mutated)), row_to_dup.copy())
+    strategies = [
+        _mutate_duplicate,
+        _mutate_change_marker,
+        _mutate_remove_segment,
+        # _mutate_add_segment,
+        _mutate_lengths,
+        _mutate_segment
+    ]
 
-    if len(mutated) > 150000:
-        mutated = mutated[:150000]
+    strat_used = random.choice(strategies)
+    mutated_segments = strat_used(segments)
+
+    if strat_used == _mutate_lengths:
+        def get_number():
+            if random.random() < 0.8:
+                return random.choice([0, 1, 2, 127, 128, 254, 255])
+            else:
+                return random.randint(0, 255)
+
+        encoded_segments = [
+            segment.encode(get_number() if random.random() < 0.3 else None) 
+            for segment in mutated_segments
+        ]
+
+        return b"\xff\xd8" + b''.join(encoded_segments) + b"\xff\xd9"
+
+
+    mutated_segments = [segment.encode() for segment in mutated_segments]
+    encoded_jpg = b"\xff\xd8" + b''.join(mutated_segments) + b"\xff\xd9"
 
     if random.random() < 0.1:
-        globalVar.corpus.insert(0, mutated)
+        globalVar.corpus.insert(0, encoded_jpg)
     else:
-        globalVar.corpus.append(mutated)
+        globalVar.corpus.append(encoded_jpg)
 
-    #print(f"[DEBUG] rows={len(mutated)}, total_cells={sum(len(r) for r in mutated)}, avg_cell_len={sum(len(c) for r in mutated for c in r) / max(1, sum(len(r) for r in mutated)):.2f}")
-
-    return mutated
+    return encoded_jpg

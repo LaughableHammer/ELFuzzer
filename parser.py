@@ -118,7 +118,7 @@ def parser(input_path: Path, file_content: bytes, seed: int) -> bytes:
             parts = file_content.decode(errors='ignore')
             return (json_parser(parts) + '\n').encode()
         case "jpg":
-            return jpg_mutate(file_content, seed)
+            return jpg_mutate(file_content)
         case _:
             # assume plaintext if no match
             parts = [file_content.decode(errors='ignore')]
