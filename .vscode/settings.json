@@ -1,8 +1,0 @@
-{
-    "files.associations": {
-        "*.download": "javascript",
-        "*.large": "large",
-        ".gdbinit": "plaintext",
-        "elf.h": "c"
-    }
-}
