@@ -35,6 +35,7 @@ def fuzzBinary(binary: Path, sample_input: Path):
     i = 0
     while True:
         random.seed(i)
+        i += 1
         
         execution_time = (time.time() - start_time) * 1000
         if execution_time > RUN_TIME_PER_BINARY:
@@ -45,10 +46,9 @@ def fuzzBinary(binary: Path, sample_input: Path):
         
         command_output = subprocess.run(binary,
                                         input=input_bytes, capture_output=True) 
-        
         if command_output.returncode < 0:
             if ERRORS_EXPECTED[command_output.returncode] not in command_output.stderr:
-                print(f"{Colours.MAGENTA}stderr output does not match error code, ignoring{Colours.RESET}")
+                print(f"{i} {Colours.MAGENTA}stderr output {command_output.stderr[:50]} {command_output.stdout[:50]} {command_output.returncode} does not match error code, ignoring{Colours.RESET}")
                 continue
             print(f"{Colours.BOLD}{Colours.GREEN}The fuzzer took {i} attempts and {math.ceil(execution_time)}ms, \
 which is {i//(execution_time/1000)} attempts/s to find the input\n \
@@ -64,5 +64,3 @@ which is {i//(execution_time/1000)} attempts/s to find the input\n \
         if i % 501 == 0 and i != 0:
             execution_time = (time.time() - start_time)
             print(f"{i}: \t{i//(execution_time)} attempts/s \tinput: {input_bytes[:50]}", end='\r')
-        
-        i += 1

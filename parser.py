@@ -60,6 +60,7 @@ def detect_filetype(input_path: Path):
 
     if input_bytes.startswith(b"\xff\xd8\xff"):
         globalVar.filetype = 'jpg'
+        print(f"File type detected: {globalVar.filetype}")
         return globalVar.filetype
 
 

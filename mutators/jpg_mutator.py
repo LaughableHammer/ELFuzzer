@@ -67,8 +67,16 @@ def _mutate_duplicate(segments: list[JpgSegment]) -> list[JpgSegment]:
 def _mutate_change_marker(segments: list[JpgSegment]) -> list[JpgSegment]:
     to_mutate = random.randint(1, len(segments) // 3 + 1)
 
+    if random.random() < 0.5:
+        # comphrehensive list of markers
+        marker = random.randint(0xffc0, 0xffff)
+    else:
+        # more common and interesting markers
+        marker = random.choice([0xfffe, 0xffe0, 0xffd8, 0xffc0, 0xffc2, 0xffc4, 0xffdd, 0xffda, 0xffd0])
+        
+    marker = marker.to_bytes(2, 'big')
+
     for _ in range(to_mutate):
-        marker = random.randint(0xffc0, 0xffff).to_bytes(2, 'big')
         random.choice(segments).marker = marker
 
     return segments
@@ -125,7 +133,7 @@ def jpg_mutate(sample_input: bytes) -> bytes:
     if strat_used == _mutate_lengths:
         def get_number():
             if random.random() < 0.8:
-                return random.choice([0, 1, 2, 127, 128, 254, 255])
+                return random.choice([0, 1, 2, 127, 128, 255])
             else:
                 return random.randint(0, 255)
 
