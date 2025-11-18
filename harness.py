@@ -48,6 +48,7 @@ def fuzzBinary(binary: Path, sample_input: Path):
                                         input=input_bytes, capture_output=True) 
         if command_output.returncode < 0:
             if ERRORS_EXPECTED[command_output.returncode] not in command_output.stderr:
+                # This is just for debugging, TODO: make it prettier
                 print(f"{i} {Colours.MAGENTA}stderr output {command_output.stderr[:50]} {command_output.stdout[:50]} {command_output.returncode} does not match error code, ignoring{Colours.RESET}")
                 continue
             print(f"{Colours.BOLD}{Colours.GREEN}The fuzzer took {i} attempts and {math.ceil(execution_time)}ms, \
