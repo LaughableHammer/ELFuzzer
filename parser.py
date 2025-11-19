@@ -5,7 +5,8 @@ import globalVar
 import json, csv
 import xml.etree.ElementTree as etree
 from mutators.csv_mutator import csv_mutate
-from mutators.json_csv_mutator import json_csv_mutate
+from mutators.json_mutator import mutate
+from flatten_dict import flatten, unflatten
 import random
 
 def decode_bytes(b: bytes) -> str:
@@ -21,7 +22,7 @@ def detect_filetype(input_path: Path):
     # Read once
     text = decode_bytes(input_path.read_bytes()).strip()
 
-    # Check JSON (only accept dicts or lists, not primitives like 1, "abc", etc.)
+    # Check JSON (only accept dicts or lists)
     if text and text[0] in ('{', '['):
         try:
             parsed = json.loads(text)
@@ -36,7 +37,7 @@ def detect_filetype(input_path: Path):
     try:
         with open(input_path, 'r', newline='', encoding='utf-8', errors='ignore') as f:
             sample = f.read(1024)
-            if '\n' in sample:  # must have multiple lines to be plausible CSV
+            if '\n' in sample and ',' in sample:  # must have multiple lines to be plausible CSV
                 csv.Sniffer().sniff(sample)
                 globalVar.filetype = 'csv'
                 print(f"File type detected: {globalVar.filetype}")
@@ -70,10 +71,10 @@ def rows_to_csv(rows: list[list[str]]) -> str:
     writer.writerows(rows)
     return f.getvalue()
 
-def json_parser(parts: list[str], seed: int) -> str:
-    mutated = json_csv_mutate(parts, seed)
-    #with open('output.bin', 'ab') as f: f.write(f'======New Output======\n{''.join(mutated)}\n'.encode())
-    return ''.join(mutated)
+def json_parser(text: str) -> str:
+    json_dict = flatten(json.loads(text), reducer="dot")
+    mutated = mutate(json_dict)
+    return json.dumps(unflatten(mutated, splitter="dot"))
 
 def csv_parser(text: str) -> str:
     """Parse CSV text → mutate structured rows → return mutated CSV string."""
@@ -108,8 +109,8 @@ def parser(input_path: Path, file_content: bytes, seed: int) -> bytes:
             # parts = [file_content.decode(errors='ignore')]
             # return (json_parser(parts, seed) + '\n').encode()
         case "json":
-            parts = [file_content.decode(errors='ignore')]
-            return (json_parser(parts, seed) + '\n').encode()
+            parts = file_content.decode(errors='ignore')
+            return (json_parser(parts) + '\n').encode()
         case _:
             # assume plaintext if no match
             parts = [file_content.decode(errors='ignore')]
