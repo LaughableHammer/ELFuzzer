@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Fuzzer{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <style>
+        .binary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .binary-option {
+            padding: 1.5rem;
+            text-align: center;
+            border: 2px solid var(--pico-muted-border-color);
+            border-radius: var(--pico-border-radius);
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--pico-background-color);
+        }
+
+        .binary-option:hover {
+            border-color: var(--pico-primary);
+            background: var(--pico-primary-background);
+        }
+
+        .binary-option.selected {
+            border-color: var(--pico-primary);
+            background: var(--pico-primary-background);
+            font-weight: bold;
+        }
+
+        .center-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+    </style>
+</head>
+
+<body>
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+</body>
+
+</html>

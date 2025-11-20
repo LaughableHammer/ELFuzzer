@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Fuzzer - Configuration{% endblock %}
+
+{% block content %}
+<div class="center-container">
+    <h2>Fuzzer Configuration</h2>
+
+    <form id="configForm">
+        <!-- <label for="runtime"> -->
+        Runtime (seconds)
+        <input type="number" id="runtime" name="runtime" value="60" min="1" required>
+        <!-- </label> -->
+        <!-- <label for="runtime"> -->
+        Timeout (seconds)
+        <input type="number" id="timeout" name="timeout" value="60" min="1" required>
+        <!-- </label> -->
+
+        <!-- <legend>Select Binary to Fuzz</legend> -->
+        <p>Select Binary to Fuzz</p>
+        <div class="binary-grid">
+            {% for binary in binaries %}
+            <div class="binary-option" data-binary="{{ binary }}">
+                {{ binary }}
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- <fieldset> -->
+        <!-- </fieldset> -->
+
+        <input type="hidden" id="selectedBinary" name="binary" required>
+
+        <button type="submit">Start Fuzzing</button>
+    </form>
+</div>
+
+<script>
+    const binaryOptions = document.querySelectorAll('.binary-option');
+    const selectedBinaryInput = document.getElementById('selectedBinary');
+
+    binaryOptions.forEach(option => {
+        option.addEventListener('click', function () {
+            binaryOptions.forEach(opt => opt.classList.remove('selected'));
+            this.classList.add('selected');
+            selectedBinaryInput.value = this.dataset.binary;
+        });
+    });
+
+    document.getElementById('configForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const runtime = document.getElementById('runtime').value;
+        const timeout = document.getElementById('runtime').timeout;
+        const binary = selectedBinaryInput.value;
+
+        if (!binary) {
+            alert('Please select a binary to fuzz');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/start-fuzzing', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ runtime, timeout, binary })
+            });
+
+            const data = await response.json();
+            alert(data.message);
+        } catch (error) {
+            alert('Error starting fuzzing: ' + error.message);
+        }
+    });
+</script>
+{% endblock %}

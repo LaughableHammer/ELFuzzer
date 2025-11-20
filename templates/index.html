@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Fuzzer - Welcome{% endblock %}
+
+{% block content %}
+<div class="center-container">
+    <hgroup>
+        <h1>ELFuzzer</h1>
+    </hgroup>
+
+    <p>
+        Welcome to ELFuzzer, the fuzzer made by Elisa, Josh, Kushaagra and Yunqi for COMP6447! You can run one of the
+        example binaries or submit your own along with a working input file! We have a range of mutation strategies
+        tailored for plaintext, CSV, JSON, XML, JPG, ELF and PDF files.
+    </p>
+
+    <img src="../assets/meme.jpg">
+
+    <p>
+        Press the button below to get started.
+    </p>
+
+    <a href="/configure" role="button">Get Started</a>
+</div>
+{% endblock %}

@@ -5,11 +5,12 @@ import time
 from pathlib import Path
 from colours import Colours
 from parser import parser
+from flask_socketio import SocketIO, emit
 
 # import agnostic_mutator
 
-RUN_TIME_PER_BINARY = 60000  # ms
-TIMEOUT = 3                 # seconds
+BASE_RUN_TIME_PER_BINARY = 60000  # ms
+BASE_TIMEOUT = 3                 # seconds
 
 ERRORS_EXPECTED = {
     -4: b"Illegal instruction",             # SIGILL
@@ -23,7 +24,8 @@ ERRORS_EXPECTED = {
 }
 
 
-def fuzzBinary(binary: Path, sample_input: Path) -> bool:
+def fuzzBinary(binary: Path, sample_input: Path, timeout=BASE_TIMEOUT, 
+               run_time_per_binary=BASE_RUN_TIME_PER_BINARY, updateWebsite=False) -> bool:
     start_time = time.time()
 
     # TODO: using multiprocessing for multiple threads
@@ -38,16 +40,16 @@ def fuzzBinary(binary: Path, sample_input: Path) -> bool:
         random.seed(i)
 
         execution_time = (time.time() - start_time) * 1000
-        if execution_time > RUN_TIME_PER_BINARY:
+        if execution_time > run_time_per_binary:
             print(
-                f"{Colours.BOLD}{Colours.RED}{RUN_TIME_PER_BINARY}ms have elapsed, moving onto next binary                                         {Colours.RESET}"
+                f"{Colours.BOLD}{Colours.RED}{run_time_per_binary}ms have elapsed, moving onto next binary                                         {Colours.RESET}"
             )
             break
 
         input_bytes = parser(sample_input, file_content, seed=i)
         try:
             command_output = subprocess.run(
-                binary, input=input_bytes, capture_output=True, timeout=TIMEOUT
+                binary, input=input_bytes, capture_output=True, timeout=timeout
             )
         except subprocess.TimeoutExpired:
             print("Timed out. Infinite loop detected")
