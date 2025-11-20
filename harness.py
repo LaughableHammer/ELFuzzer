@@ -47,7 +47,7 @@ def fuzzBinary(binary: Path, sample_input: Path):
                                             input=input_bytes, 
                                             capture_output=True,
                                             timeout=TIMEOUT) 
-        except:
+        except subprocess.TimeoutExpired:
             print("Timed out. Infinite loop detected")
             return False # Consider returning true
         
