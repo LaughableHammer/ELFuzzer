@@ -91,7 +91,7 @@ def mutate(part: bytearray):
         bitflip_mutation,
         byteflip_mutation,
         fmtstring_mutation,
-        # known_ints
+        random_char
     ]
     chosen_strategy = random.choice(strategies)
     return chosen_strategy(part)
