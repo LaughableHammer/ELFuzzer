@@ -11,14 +11,12 @@ def extend(item: bytearray) -> bytearray:
 def additive(item: bytearray) -> bytearray:
     """
     Function that adds some random amounts of ASCII characters at a random index
-
-    TODO: add bad numbers.
     """
     if len(item) > 10000 or len(item) < 2:
         return item
     idx = random.randint(0, len(item))
     if random.random() < 0.01:
-        random_bytes = ''.join(random.choices(string.ascii_uppercase, k=random.randint(1, 990)))
+        random_bytes = ''.join(random.choices(string.ascii_uppercase, k=random.randint(500, 999)))
     else:
         random_bytes = f'{random.randint(-999999, 0)}'
     item[idx:idx] = random_bytes.encode()
