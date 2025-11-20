@@ -4,10 +4,12 @@ import agnostic_mutator
 import globalVar
 import json, csv
 import xml.etree.ElementTree as etree
+from lxml import etree #TODO: add into requirements.txt, and find out which one is used 
 from mutators.csv_mutator import csv_mutate
-from mutators.json_csv_mutator import json_csv_mutate
+from mutators.json_mutator import mutate
 from mutators.xml_mutator import xml_mutate
-from lxml import etree
+from flatten_dict import flatten, unflatten
+
 
 def decode_bytes(b: bytes) -> str:
     try:
@@ -71,10 +73,10 @@ def rows_to_csv(rows: list[list[str]]) -> str:
     writer.writerows(rows)
     return f.getvalue()
 
-def json_parser(parts: list[str], seed: int) -> str:
-    mutated = json_csv_mutate(parts, seed)
-    #with open('output.bin', 'ab') as f: f.write(f'======New Output======\n{''.join(mutated)}\n'.encode())
-    return ''.join(mutated)
+def json_parser(text: str) -> str:
+    json_dict = flatten(json.loads(text), reducer="dot")
+    mutated = mutate(json_dict)
+    return json.dumps(unflatten(mutated, splitter="dot"))
 
 def csv_parser(text: str) -> str:
     """Parse CSV text → mutate structured rows → return mutated CSV string."""
@@ -94,14 +96,13 @@ def csv_parser(text: str) -> str:
 
     return mutated_csv_text + "\n"
 
+def plaintext_parser(input: list[str]) -> str:
+    return agnostic_mutator.plaintext_mutate(input)
+
 def xml_parser(_input: str) -> str:
     tree = etree.fromstring(_input)
     mutated = xml_mutate(tree)
     return (etree.tostring(mutated).decode())
-
-def plaintext_parser(input: list[str], seed: int) -> str:
-    return agnostic_mutator.plaintext_mutate(input, seed)
-
 
 def parser(input_path: Path, file_content: bytes, seed: int) -> bytes:
     ft = detect_filetype(input_path)
@@ -111,15 +112,13 @@ def parser(input_path: Path, file_content: bytes, seed: int) -> bytes:
         case "csv":
             text = file_content.decode(errors='ignore')
             return (csv_parser(text) + '\n').encode()
-            # parts = [file_content.decode(errors='ignore')]
-            # return (json_parser(parts, seed) + '\n').encode()
         case "json":
-            parts = [file_content.decode(errors='ignore')]
-            return (json_parser(parts, seed) + '\n').encode()
+            parts = file_content.decode(errors='ignore')
+            return (json_parser(parts) + '\n').encode()
         case "xml":
             parts = file_content.decode(errors='ignore')
             return (xml_parser(parts) + '\n').encode()
         case _:
             # assume plaintext if no match
-            parts = [file_content.decode(errors='ignore')]
-            return (plaintext_parser(parts, seed) + '\n').encode()
+            parts = file_content.decode(errors='ignore')
+            return plaintext_parser(parts) + b'\n'
