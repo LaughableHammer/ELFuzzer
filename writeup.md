@@ -25,6 +25,4 @@ The fuzzer can find bugs with how CSVs and JSON files are parsed, it can look fo
 
 # Improvements 
 
-- Add a parser to the current fuzzer structure - facilitate the input mutation process by ensuring that file format is maintained and a valid input is given as currently, a small percentage of the inputs provided to the binaries may break formatting (delete a comma in a csv) which results in wasted CPU cycles and time.
-
-- Add more mutation strategies such as magic strings and bit flipping
+- Python limitations with multithreading - GIL
