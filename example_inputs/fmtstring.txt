@@ -1,3 +1,2 @@
 thisisaverylongsample input but all the user needs to do is add a percent s or a percent n
 somewhere in this input and it will all go down faster than you can say format string
-funnily enough, after the first line, none of this will be read in anyway since the binary only takes in 128 bytes.

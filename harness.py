@@ -24,7 +24,6 @@ def fuzzBinary(binary: Path, sample_input: Path):
     start_time = time.time()
         
     # TODO: using multiprocessing for multiple threads
-
     # TODO: capture any other output by the binary such as stderr, library calls etc
 
     # read the input from example
