@@ -3,8 +3,7 @@ from io import StringIO # allows dealing with file-like objects in memory
 import agnostic_mutator
 import globalVar
 import json, csv
-import xml.etree.ElementTree as etree
-from lxml import etree #TODO: add into requirements.txt, and find out which one is used 
+from lxml import etree
 from mutators.csv_mutator import csv_mutate
 from mutators.json_mutator import mutate
 from mutators.xml_mutator import xml_mutate

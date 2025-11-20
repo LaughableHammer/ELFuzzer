@@ -84,14 +84,14 @@ def random_char(item: bytearray) -> bytearray:
             end = start + len(value)
             return item[:start] + value + item[end:]
 
-def mutate(part: bytearray):
+def mutate(part: bytearray) -> bytearray:
     strategies = [
         extend,
         additive,
         bitflip_mutation,
         byteflip_mutation,
+        random_char,
         fmtstring_mutation,
-        random_char
     ]
     chosen_strategy = random.choice(strategies)
     return chosen_strategy(part)

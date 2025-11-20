@@ -6,7 +6,7 @@ from lxml import etree
 import globalVar
 import copy
 import string
-from mutators.common_mutators import primitive_mutate
+from mutators.common_mutators import mutate
 
 def util_gen_random_str(len = 999):
     return ''.join(random.choices(string.ascii_uppercase, k=len))
@@ -16,17 +16,19 @@ def xml_mutate(tree):
         globalVar.corpus.append(tree)
     elif len(globalVar.corpus) > 20:
         globalVar.corpus = globalVar.corpus[10:]
+    if random.random() < 0.5:
+        globalVar.corpus.append(tree)
     
     src = random.choice(globalVar.corpus)
-    mutated = copy.deepcopy(src) # I do not know if this will cause performance issues
-
+    mutated = copy.deepcopy(src)
     mutation_strategies = [
         add_node,
-        del_node,
-        # change_node, #broken
+        # del_node,
+        # change_node, # broken
         change_attr,
-        # change_root,
-        # change_tag
+        change_root,
+        change_tag,
+        # add_depth,
     ]
 
     # Consider if there should be a few rounds of mutation?
@@ -44,9 +46,14 @@ def add_node(tree):
     """
     Add a node with arbitrary value, tag and class
     """
-    for _ in range(0, 50):
+    for _ in range(0, random.randint(0, 50)):
         new = etree.Element(util_gen_random_str(10))
-        new.text = util_gen_random_str(10)
+        # new.text = util_gen_random_str(10)
+        payload = mutate(bytearray(util_gen_random_str(1), "utf-8"))
+        try:
+            new.text = payload
+        except:
+            new.text = payload.hex()
         random_idx = random.randint(0, max(0, len(tree) - 1))
         tree.insert(random_idx, new)
     return tree
@@ -73,14 +80,13 @@ def change_node(tree):
     """
     itr = int(len(tree) * 0.3)
     if itr < 1:
-        itr = random.randint(1, 5)
-    
+        itr = random.randint(1, (len(list(tree))))
+
     to_change = random.sample(list(tree), itr)
     for node in to_change:
-        # print(node)
         if len(node.text.strip()) < 0:
             continue
-        node.text = primitive_mutate(bytearray(node.text, "utf-8"))
+        node.text = mutate(bytearray(node.text, "utf-8")).hex()
     return tree
 
 def add_attr(tree):
@@ -89,7 +95,7 @@ def add_attr(tree):
     Consider whether this would be artbirary or predefined attributes
     """
     node = random.choice(tree)
-    node.attrib[util_gen_random_str()] = primitive_mutate(util_gen_random_str())
+    node.attrib[util_gen_random_str()] = mutate(util_gen_random_str())
     return tree
 
 def change_attr(tree):
@@ -105,7 +111,11 @@ def change_attr(tree):
         return tree
     
     key = random.choice(list(node.attrib.keys()))
-    node.attrib[key] = primitive_mutate(bytearray(node.attrib[key], "utf-8"))
+    try:
+        node.attrib[key] = mutate(bytearray(node.attrib[key], "utf-8")).decode(errors='ignore')
+    # node.attrib[key] = util_gen_random_str(100)
+    except:
+        return tree
     return tree
 
 def remove_attr(tree):
@@ -127,7 +137,7 @@ def change_tag(tree):
     to_change = random.sample(list(tree), itr)
 
     for node in to_change:
-        node.tag = util_gen_random_str()
+        node.tag = util_gen_random_str(3)
     
     return tree
 
@@ -137,7 +147,7 @@ def change_root(tree):
     Should be used rarely
     """
     root = list(tree.iter())[0]
-    root.tag = util_gen_random_str()
+    root.tag = util_gen_random_str(random.randint(1, 4))
     return tree
 
 def swap_order(tree):
@@ -158,7 +168,31 @@ def add_depth(tree):
     """
     Adds some depth to the tree
     """
-    pass
+    itr = random.randint(0, 30)
+    for _ in range(itr):
+        chosen_parents = random.choice(tree)
+        child = etree.Element(util_gen_random_str(100))
+        payload = mutate(bytearray(util_gen_random_str(5), "utf-8"))
+        try:
+            child.text = payload
+        except:
+            child.text = payload.hex()
+        
+        child_depth = random.randint(0, 20)
+        current = child
+
+        for _ in range(child_depth):
+            sub_child = etree.Element(util_gen_random_str(10))
+            sub_payload = mutate(bytearray(util_gen_random_str(10), "utf-8"))
+            try:
+                sub_child.text = sub_payload
+            except:
+                sub_child.text = sub_payload.hex()
+            
+            current.append(sub_child)
+            current = sub_child
+        chosen_parents.append(child)
+    return tree
 
 def debug(tree):
     tree = etree.fromstring(tree)
