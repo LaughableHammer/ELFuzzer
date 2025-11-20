@@ -18,7 +18,7 @@ def additive(item: bytearray) -> bytearray:
     if random.random() < 0.01:
         random_bytes = ''.join(random.choices(string.ascii_uppercase, k=random.randint(500, 999)))
     else:
-        random_bytes = f'{random.randint(-999999, 0)}'
+        random_bytes = f'{random.randint(-999999, 999999)}'
     item[idx:idx] = random_bytes.encode()
     return item
 
@@ -86,6 +86,9 @@ def mutate(part: bytearray) -> bytearray:
     strategies = [
         extend,
         additive,
+        additive,
+        additive,
+        additive, # higher chance for BOF
         bitflip_mutation,
         byteflip_mutation,
         random_char,
