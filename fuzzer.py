@@ -7,7 +7,8 @@ import globalVar
 # binaries are here
 binaries = Path('binaries/')
 
-# Use this for testing
+# for additional testing
+# binaries = Path('created_binaries/')
 #binaries = [Path('binaries/passcode1'), Path('binaries/csv1'), Path('binaries/json1'), Path('binaries/csv2')]
 
 overall_start = time.time()
