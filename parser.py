@@ -7,7 +7,6 @@ import xml.etree.ElementTree as etree
 from mutators.csv_mutator import csv_mutate
 from mutators.json_mutator import mutate
 from flatten_dict import flatten, unflatten
-import random
 
 def decode_bytes(b: bytes) -> str:
     try:
@@ -92,10 +91,10 @@ def csv_parser(text: str) -> str:
 
     #with open('output.bin', 'ab') as f: f.write(f'======New Output======\n{mutated_csv_text}\n'.encode())
 
-    return mutated_csv_text + "\n"
+    return mutated_csv_text
 
-def plaintext_parser(input: list[str], seed: int) -> str:
-    return agnostic_mutator.plaintext_mutate(input, seed)
+def plaintext_parser(input: list[str]) -> str:
+    return agnostic_mutator.plaintext_mutate(input)
 
 
 def parser(input_path: Path, file_content: bytes, seed: int) -> bytes:
@@ -105,13 +104,11 @@ def parser(input_path: Path, file_content: bytes, seed: int) -> bytes:
     match ft:
         case "csv":
             text = file_content.decode(errors='ignore')
-            return (csv_parser(text) + '\n').encode()
-            # parts = [file_content.decode(errors='ignore')]
-            # return (json_parser(parts, seed) + '\n').encode()
+            return (csv_parser(text)).encode()
         case "json":
             parts = file_content.decode(errors='ignore')
             return (json_parser(parts) + '\n').encode()
         case _:
             # assume plaintext if no match
-            parts = [file_content.decode(errors='ignore')]
-            return (plaintext_parser(parts, seed) + '\n').encode()
+            parts = file_content.decode(errors='ignore')
+            return plaintext_parser(parts) + b'\n'
