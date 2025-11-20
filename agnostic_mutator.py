@@ -1,7 +1,53 @@
 import random
 
+# Adapted from https://h0mbre.github.io/Fuzzing-Like-A-Caveman/
 def bitflip_mutation(part: str, mutation_index: int) -> str:
-    return "TODO"
+    """ Mutation index will determine how many bits will be flipped"""
+    bytearr = bytearray(part, 'utf-8')
+    
+    # Flip at most 10% of bits of the input
+    bits_to_flip = int((len(bytearr)) * (mutation_index % 10) * 0.01)
+    
+    indices = []
+
+    # iterate selecting indexes until we've hit our num_of_flips number
+    i = 0
+    while i < bits_to_flip:
+        indices.append(random.randint(0, len(bytearr) - 1))
+        i += 1
+    
+    for i in indices:
+        current = bytearr[i]
+        current = (bin(current).replace("0b",""))
+        current = "0" * (8 - len(current)) + current # pad to 8
+        print("Old value:", current)
+        
+        flip = random.randint(0, 7)
+        
+        new_number = []
+        for x in current:
+            new_number.append(x)
+            
+            
+        if new_number[flip] == "1":
+            new_number[flip] = "0"
+        else:
+            new_number[flip] = "1"
+   
+        # change back into 1 string
+        current = ''
+        for x in new_number:
+            current += x
+
+        print("New value:", current)
+        
+        # convert to binary int
+        current = int(current, 2)
+        
+        bytearr[i] = current
+        
+
+    return bytearr.decode("utf-8", errors="replace")
 
 def increment_mutation(part: str, mutation_index: int) -> str:
     return str(mutation_index)
@@ -19,7 +65,6 @@ def fmtstring_mutation(part: str, mutation_index: int) -> str:
         fmt = f"%{mutation_index}$s"
         part = part[index:] + fmt + part[:index]
         
-    #print("Sending input:", part)
     return part
 
 plaintext_strategies = [bitflip_mutation, increment_mutation, fmtstring_mutation]
