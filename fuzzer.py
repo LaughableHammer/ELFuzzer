@@ -5,18 +5,18 @@ import time
 import globalVar
 
 # binaries are here
-binaries = Path('binaries/')
+# binaries = Path('binaries/')
 
 # for additional testing
-#binaries = Path('created_binaries/')
-#binaries = [Path('created_binaries/timeout'), Path('binaries/csv1'), Path('binaries/json1'), Path('binaries/csv2')]
+binaries = Path('created_binaries/')
+# binaries = [Path('binaries/csv1'), Path('binaries/json1'), Path('binaries/csv2')]
 
 overall_start = time.time()
 
 results = []
 
 for binary in binaries.iterdir():
-#for binary in binaries:
+# for binary in binaries:
     globalVar.init() # Reset global values
     print(f"{Colours.UNDERLINE}Fuzzing binary: {binary.name}{Colours.RESET}")
     
@@ -32,7 +32,7 @@ for binary in binaries.iterdir():
     fuzzed = fuzzBinary(binary, sample_input)
     elapsed = time.time() - start_time
     
-    results.append((binary.name, bool(fuzzed), elapsed))
+    results.append((binary.name, fuzzed, elapsed))
 
 total_time = time.time() - overall_start
 total_binaries = len(results)

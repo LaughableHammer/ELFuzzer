@@ -66,7 +66,7 @@ def csv_to_rows(csv_text: str) -> list[list[str]]:
 
 def rows_to_csv(rows: list[list[str]]) -> str:
     f = StringIO()
-    writer = csv.writer(f, lineterminator='\n')
+    writer = csv.writer(f, lineterminator='\n', escapechar='\\')
     writer.writerows(rows)
     return f.getvalue()
 
