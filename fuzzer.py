@@ -5,10 +5,10 @@ import time
 import globalVar
 
 # binaries are here
-binaries = Path('binaries/')
+# binaries = Path('binaries/')
 
 # for additional testing
-# binaries = Path('created_binaries/')
+binaries = Path('created_binaries/')
 # binaries = [Path('binaries/passcode1'), Path('binaries/csv1'), Path('binaries/json1'), Path('binaries/csv2')]
 
 overall_start = time.time()
@@ -20,6 +20,7 @@ for binary in binaries.iterdir():
     globalVar.init() # Reset global values
     print(f"{Colours.UNDERLINE}Fuzzing binary: {binary.name}{Colours.RESET}")
     
+
     sample_input = Path(f'example_inputs/{binary.name}.txt')
     if not sample_input.exists():
         print(f"{Colours.RED}Could not find sample input{Colours.RESET}")
