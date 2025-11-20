@@ -47,14 +47,18 @@ def fuzzBinary(binary: Path, sample_input: Path):
         command_output = subprocess.run(binary,
                                         input=input_bytes, capture_output=True) 
         if command_output.returncode < 0:
-            if ERRORS_EXPECTED[command_output.returncode] not in command_output.stderr:
+            if ERRORS_EXPECTED[command_output.returncode] not in command_output.stderr and command_output.stderr:
                 # This is just for debugging, TODO: make it prettier
                 print(f"{i} {Colours.MAGENTA}stderr output {command_output.stderr[:50]} {command_output.stdout[:50]} {command_output.returncode} does not match error code, ignoring{Colours.RESET}")
                 continue
             print(f"{Colours.BOLD}{Colours.GREEN}The fuzzer took {i} attempts and {math.ceil(execution_time)}ms, \
 which is {i//(execution_time/1000)} attempts/s to find the input\n \
 {Colours.CYAN}{input_bytes[:200]}{Colours.RESET}\n {Colours.BOLD}{Colours.GREEN}which crashes the program{Colours.RESET}")
-            print(f"{Colours.YELLOW}Error {command_output.returncode} Detected: {command_output.stderr.strip()}{Colours.RESET}")
+            if command_output.returncode in ERRORS_EXPECTED:
+                error_text = ERRORS_EXPECTED[command_output.returncode]
+            else:
+                error_text = b''
+            print(f"{Colours.YELLOW}Error {command_output.returncode} {error_text.decode('utf-8')} detected.\nstderr: {command_output.stderr.strip()}{Colours.RESET}")
             
             # write output to file
             with open(f'fuzzer_output/bad_{binary.name}.txt', 'wb') as file:
