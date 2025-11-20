@@ -7,6 +7,5 @@ void vuln() {
 
 int main() {   
     vuln();
-    fprintf(stderr, "not really an error\n");
-    return -6;
+    return 0;
 }
