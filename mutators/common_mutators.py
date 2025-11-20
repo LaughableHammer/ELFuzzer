@@ -16,7 +16,7 @@ def additive(item: bytearray) -> bytearray:
         return item
     idx = random.randint(0, len(item))
     if random.random() < 0.01:
-        random_bytes = ''.join(random.choices(string.ascii_uppercase, k=random.randint(990, 990)))
+        random_bytes = ''.join(random.choices(string.ascii_uppercase, k=random.randint(500, 999)))
     else:
         random_bytes = f'{random.randint(-999999, 0)}'
     item[idx:idx] = random_bytes.encode()
