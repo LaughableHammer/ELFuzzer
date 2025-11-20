@@ -3,10 +3,9 @@ import math
 import random
 import time
 from pathlib import Path
-from mutators import json_csv_mutator
 from colours import Colours
-import agnostic_mutator
 from parser import parser
+# import agnostic_mutator
 
 RUN_TIME_PER_BINARY = 60000 #ms
 
