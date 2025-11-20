@@ -8,14 +8,14 @@ byteobjects (even with errors=ignore)
 This is pretty much a wrapper for common_mutator
 """
 
-def plaintext_mutate(parts: str) -> str:
+def plaintext_mutate(parts: str) -> bytearray:
     """Mutates one of the strings in parts
     This function alternates between strategies."""
     # TODO: we will also presumably have to send them 50 items at a time for multiprocessing
    
-    mutated = bytearray(parts[:])
+    mutated = parts[:].encode()
     mutated = mutate(bytearray(mutated))
-    return mutated.decode()
+    return mutated
 
 
 

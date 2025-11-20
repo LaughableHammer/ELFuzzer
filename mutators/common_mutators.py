@@ -1,6 +1,5 @@
 import random
 import string
-import struct
 
 def extend(item: bytearray) -> bytearray:
     num_times = random.randint(0, 5)
@@ -12,11 +11,16 @@ def extend(item: bytearray) -> bytearray:
 def additive(item: bytearray) -> bytearray:
     """
     Function that adds some random amounts of ASCII characters at a random index
+
+    TODO: add bad numbers.
     """
     if len(item) > 10000 or len(item) < 2:
         return item
-    idx = random.randint(0, len(item) - 1)
-    random_bytes = ''.join(random.choices(string.ascii_uppercase, k=random.randint(1, 990)))
+    idx = random.randint(0, len(item))
+    if random.random() < 0.01:
+        random_bytes = ''.join(random.choices(string.ascii_uppercase, k=random.randint(1, 990)))
+    else:
+        random_bytes = f'{random.randint(-999999, 0)}'
     item[idx:idx] = random_bytes.encode()
     return item
 
@@ -51,36 +55,34 @@ def fmtstring_mutation(part: bytearray) -> bytearray:
     else:
         # Select random indices to modify, quantity based on mutation_index
         # count = (mutation_index // 4) if mutation_index > 4 else 1
-        count = max(1, min(count, len(part)))
+        count = max(1, min(0, len(part)))
         index_to_modify = random.sample(range(len(part)), k=count)
     
     for index in index_to_modify:
         fmt = f"%{random.randint(1, 6)}$n" # %n usually is more reliable to crash
-        data = data[index:] + fmt + data[:index]
+        data = data[index:] + fmt.encode() + data[:index]
         
     return data
 
-def known_ints(parts: bytearray) -> bytearray:
-    """
-    TODO: possibly move this to the common mutator
-    Also should probably check that whatever its replacing its an integer (but it would be 
-    difficult)
-    """
-    KNOWN_INTS = [
-        -1, 0, 1, 
-        16, 32, 64, 127, 128, 255,
-        256, 512, 1024, 4096,
-        0x7FFFFFFF, 0x80000000, 0xFFFFFFFF
-    ]
-    INT_BYTES = [struct.pack("<I", i & 0xFFFFFFFF) for i in KNOWN_INTS] # seems a little complex
+def random_char(item: bytearray) -> bytearray:
+    magic_numbers = [b'%s', b'-1', b'0xFF', b'0x00', b'0xFFFF', b'0x0000', b'0x80000000', b'0x40000000', b'0x7FFFFFFF']
+    value = random.choice(magic_numbers)
 
-    data = parts[:]
+    if not item or len(item) < len(value):
+        return bytearray(value)
+    
+    mode = random.choice(['replace', 'insert', 'splice'])
 
-    for i in range(0, len(data) - 3, 4):
-        if random.random() < 0.1:
-            data[i:i+4] = random.choice(INT_BYTES)
-
-    return data
+    match mode:
+        case 'replace':
+            return bytearray(value)
+        case 'insert':
+            idx = random.randint(0, len(item) - 1)
+            return item[:idx] + bytearray(item) + item[idx:]
+        case 'splice':
+            start = random.randint(0, len(item) - len(value))
+            end = start + len(value)
+            return item[:start] + value + item[end:]
 
 def mutate(part: bytearray):
     strategies = [
@@ -89,7 +91,7 @@ def mutate(part: bytearray):
         bitflip_mutation,
         byteflip_mutation,
         fmtstring_mutation,
-        known_ints
+        # known_ints
     ]
     chosen_strategy = random.choice(strategies)
     return chosen_strategy(part)
