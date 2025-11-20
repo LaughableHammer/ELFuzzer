@@ -8,6 +8,7 @@ from parser import parser
 # import agnostic_mutator
 
 RUN_TIME_PER_BINARY = 60000 #ms
+TIMEOUT = 3 # seconds
 
 ERRORS_EXPECTED = {
     -4:  b"Illegal instruction",       # SIGILL
@@ -24,7 +25,6 @@ def fuzzBinary(binary: Path, sample_input: Path):
     start_time = time.time()
         
     # TODO: using multiprocessing for multiple threads
-
     # TODO: capture any other output by the binary such as stderr, library calls etc
 
     # read the input from example
@@ -41,9 +41,14 @@ def fuzzBinary(binary: Path, sample_input: Path):
             break
             
         input_bytes = parser(sample_input, file_content, seed=i)
-        
-        command_output = subprocess.run(binary,
-                                        input=input_bytes, capture_output=True) 
+        try:
+            command_output = subprocess.run(binary,
+                                            input=input_bytes, 
+                                            capture_output=True,
+                                            timeout=TIMEOUT) 
+        except subprocess.TimeoutExpired:
+            print("Timed out. Infinite loop detected")
+            return False # Consider returning true
         
         if command_output.returncode < 0:
             if ERRORS_EXPECTED[command_output.returncode] not in command_output.stderr:

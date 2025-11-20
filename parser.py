@@ -93,7 +93,7 @@ def csv_parser(text: str) -> str:
 
     #with open('output.bin', 'ab') as f: f.write(f'======New Output======\n{mutated_csv_text}\n'.encode())
 
-    return mutated_csv_text + "\n"
+    return mutated_csv_text
 
 def plaintext_parser(input: list[str]) -> str:
     return agnostic_mutator.plaintext_mutate(input)
@@ -110,7 +110,7 @@ def parser(input_path: Path, file_content: bytes, seed: int) -> bytes:
     match ft:
         case "csv":
             text = file_content.decode(errors='ignore')
-            return (csv_parser(text) + '\n').encode()
+            return (csv_parser(text)).encode()
         case "json":
             parts = file_content.decode(errors='ignore')
             return (json_parser(parts) + '\n').encode()
