@@ -11,5 +11,5 @@ COPY agnostic_mutator.py /
 COPY requirements.txt /
 
 RUN pip install --upgrade pip
-RUN pip install --root-user-action -r requirements.txt
+RUN pip install -r requirements.txt
 CMD ["python", "fuzzer.py"]
