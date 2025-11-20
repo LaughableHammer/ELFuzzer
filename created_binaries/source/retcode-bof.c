@@ -5,7 +5,8 @@ void vuln() {
     fgets(buffer, 500,stdin);
 }
 
-int main() {   
+int main() {       
+    printf("Buffer overflow with a trick");
     vuln();
 
     // ensure we are only detecting crashes

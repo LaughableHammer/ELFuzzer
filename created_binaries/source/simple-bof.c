@@ -7,5 +7,6 @@ void vuln() {
 
 int main() {   
     vuln();
-    return 0;
+    fprintf(stderr, "stack smashing detected");
+    return -6;
 }

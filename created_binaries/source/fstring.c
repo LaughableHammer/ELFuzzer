@@ -1,14 +1,18 @@
 #include <stdio.h>
+#include <unistd.h>
+
+void win() {
+    execve("/bin/sh", NULL, NULL);
+}
 
 void vuln() {
     char buffer[256];
-    fgets(buffer, 500,stdin);
+    fgets(buffer, sizeof(buffer),stdin);
+    printf(buffer);
 }
 
-int main() {   
+int main() {
+    printf("I love format strings!\n");
     vuln();
-
-    // ensure we are only detecting crashes
-    fprintf(stderr, "not a real crash");
-    return -6;
+    return 0;
 }
