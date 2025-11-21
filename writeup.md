@@ -8,23 +8,28 @@ ELFuzzer consists of 3 main components:
 
 ## Mutations
 
-Our fuzzer currently uses the following mutation strategies which in most cases are round-robin'd between:
-- For plain text (or unimplemented) -> extend existing input (via duplication), add random bytes to input, bitflips, byteflips, adding format strings randomly, adding magic bytes (-1, MAX_INT etc.), and performing arithmetic on the input by treating sequences of bytes as numbers and performing addition and subtraction with small random numbers
-- For JSON  -> duplicate a random entry, modify a random entry, add additional depth in a location, add an additional JSON object in a new branch, add a new entry, modify a key randomly, remove entries, and set a value to null.
-- For CSV -> mutate a random cell, duplicate some rows
-- For XML -> for an xml tree, add nodes to it, remove nodes from it, modify the value of particular nodes, add remove and modify attributes of an xml object, change the tag of a node, change the root, swap the order of two nodes and add additional depth to the xml tree
+Our fuzzer currently uses the following mutation strategies which in most cases are randomly chosen between:
+- For plain text -> extend existing input (via duplication), add random bytes to input, bitflips, byteflips, adding format strings randomly and adding magic bytes (-1, MAX_INT etc.). This is done by using the shared common mutator library.
+- For JSON  -> duplicate a random entry, modify a random entry, add additional depth in a location, add an additional JSON object in a new branch, add a new entry, modify a key randomly, remove entries, and set a value to null. When dealing with strings in the key or value, the common mutator library is used to modify the string.
+- For CSV -> mutate a random cell, or duplicate some rows. When dealing with random cells, this is reliant on the common common mutator library.
+- For XML -> for an xml tree, add nodes to it, remove nodes from it, modify the value of particular nodes, add remove and modify attributes of an xml object, change the tag of a node, change the root, swap the order of two nodes and add additional depth to the xml tree. When dealing with individal tags/values, the common mutator is used. 
 - For JPEG -> parsing the jpeg to split it into distinct segments to duplicate, change the marker of in the header, remove, and mutate. When its length changed the metadata is usually updated to ensure it remains parsable.
 - For ELF -> adding sections to the elf while ensuring that the metadata is correct, performing general mutations within each section and looking for strings contained within the program to add format specifiers to
 - For PDF -> changing numbers contained within the file's metadata and mutating text within compressed streams
 
+The shared common mutator library is usually called in some capacity in all of the mutators, providing efficient access to shared mutators. This mutator has the following mutations:
+- additive: append arbitary bytes to the input
+- arithmatic mutation: obtain a random 1,2,4 or 8 byte chunk, add/subtract a certain amount and reinsert where it was.
+- extend: duplicate the original input
+- bitflip: chooses a random number of bits in random locations and flip the bit (from 0 to 1 and vice versa)
+- byteflip: chooses a random byte and flips all the 0 and 1.
+- fmtstring: adds a format string payload to cause a crash
+- random_char + get_random_magic_num: inserts/replaces some bytes in the input with special edge case numbers to cause crashes.
 
-The shared common mutator library is usually called in some capacity in all of the mutators, providing efficient access to shared mutators.
-
-Almost all of these file mutators utilise a corpus to mutate the sample input, and then perform further mutations on the mutated input itself, allowing for more diverse inputs that vary significantly from the initial sample. This corpus is trimmed when it gets too big and occasionally, the sample input is added back to it to ensure we don't stray too far from the expected format.
+Almost all of these file mutators utilise a corpus to mutate the sample input, and then perform further mutations on the mutated input itself, allowing for more diverse inputs that vary significantly from the initial sample. This corpus is trimmed when it gets too big and occasionally, the original sample input is added back to it to ensure we don't stray too far from the expected format.
 
 ## Parser
 Our parser design allows for tailored fuzzing of various file types and formats by doing file specific parsing, for example, CSV files are converted into 2D arrays and reconstructed back into CSVs after mutation and XML inputs are parsed into XML trees using libraries.
-
 
 ## Harness
 The harness in this fuzzer is responsible for running the binary with the mutated input and monitoring outputs as well as collecting important statistics about the fuzzing process, keeping the user informed during the process by providing an interactive and colourful design. 
@@ -62,10 +67,9 @@ It then runs the fuzzer on a binary and brings the user to an interface. Flask E
 This web interface is completed using Python Flask. It sits on top of the actual fuzzer, with some extra implementation (global variable) to facilitate information transfer between the fuzzer and the web interface. To run the server inside the Docker container execute `./run_fuzzer_server.sh`.
 
 
-
-
 # Improvements 
 Current limitations of the fuzzer include
 - No multithreading resulting in reduced fuzzing speeds
-- Lack of coverage based testing resulting in less personalised fuzzing
+- lack of coverage based testing resulting in less personalised fuzzing
+- Lack of PDF specific fuzzing techniques
 - Lack of in-memory resetting which results in reduced fuzzing speeds
