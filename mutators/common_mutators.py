@@ -82,7 +82,11 @@ def random_char(item: bytearray) -> bytearray:
             end = start + len(value)
             return item[:start] + value + item[end:]
 
-def mutate(part: bytearray) -> bytearray:
+def get_random_magic_num() -> int:
+    magic_numbers = [b'-1', b'0xFF', b'0x00', b'0xFFFF', b'0x0000', b'0x80000000', b'0x40000000', b'0x7FFFFFFF']
+    return int(random.choice(magic_numbers), 16)
+
+def mutate(part: bytearray):
     strategies = [
         extend,
         additive,
