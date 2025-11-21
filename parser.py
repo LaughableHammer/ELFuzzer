@@ -3,9 +3,10 @@ from io import StringIO # allows dealing with file-like objects in memory
 import agnostic_mutator
 import globalVar
 import json, csv
-import xml.etree.ElementTree as etree
+from lxml import etree
 from mutators.csv_mutator import csv_mutate
 from mutators.json_mutator import mutate
+from mutators.xml_mutator import xml_mutate
 from flatten_dict import flatten, unflatten
 from mutators.jpg_mutator import jpg_mutate
 from mutators.elf_mutator import elf_mutate
@@ -53,7 +54,7 @@ def detect_filetype(input_path: Path):
     # Check XML
     if text.startswith('<'):
         try:
-            etree.fromstring(text)
+            etree.fromstring(text.encode())
             globalVar.filetype = 'xml'
             print(f"File type detected: {globalVar.filetype}")
             return globalVar.filetype
@@ -88,7 +89,7 @@ def csv_to_rows(csv_text: str) -> list[list[str]]:
 
 def rows_to_csv(rows: list[list[str]]) -> str:
     f = StringIO()
-    writer = csv.writer(f, lineterminator='\n')
+    writer = csv.writer(f, lineterminator='\n', escapechar='\\')
     writer.writerows(rows)
     return f.getvalue()
 
@@ -113,10 +114,15 @@ def csv_parser(text: str) -> str:
 
     #with open('output.bin', 'ab') as f: f.write(f'======New Output======\n{mutated_csv_text}\n'.encode())
 
-    return mutated_csv_text + "\n"
+    return mutated_csv_text
 
-def plaintext_parser(input: list[str], seed: int) -> str:
-    return agnostic_mutator.plaintext_mutate(input, seed)
+def plaintext_parser(input: list[str]) -> str:
+    return agnostic_mutator.plaintext_mutate(input)
+
+def xml_parser(input: str) -> str:
+    tree = etree.fromstring(input.encode())
+    mutated = xml_mutate(tree)
+    return (etree.tostring(mutated).decode())
 
 def parser(input_path: Path, file_content: bytes, seed: int) -> bytes:
     ft = detect_filetype(input_path)
@@ -125,9 +131,7 @@ def parser(input_path: Path, file_content: bytes, seed: int) -> bytes:
     match ft:
         case "csv":
             text = file_content.decode(errors='ignore')
-            return (csv_parser(text) + '\n').encode()
-            # parts = [file_content.decode(errors='ignore')]
-            # return (json_parser(parts, seed) + '\n').encode()
+            return (csv_parser(text)).encode()
         case "json":
             parts = file_content.decode(errors='ignore')
             return (json_parser(parts) + '\n').encode()
@@ -141,7 +145,10 @@ def parser(input_path: Path, file_content: bytes, seed: int) -> bytes:
             return elf_mutate(file_content, seed)
         case "pdf":
             return pdf_mutate(file_content)
+        case "xml":
+            parts = file_content.decode(errors='ignore')
+            return (xml_parser(parts) + '\n').encode()
         case _:
             # assume plaintext if no match
-            parts = [file_content.decode(errors='ignore')]
-            return (plaintext_parser(parts, seed) + '\n').encode()
+            parts = file_content.decode(errors='ignore')
+            return plaintext_parser(parts) + b'\n'

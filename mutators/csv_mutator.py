@@ -1,7 +1,6 @@
 import random
 import globalVar
-from .common_mutators import additive, extend
-import string
+from .common_mutators import mutate
 
 def mutate_cell(rows: list[list[str]]) -> list[list[str]]:
     if not rows or len(rows) <= 1:
@@ -20,12 +19,28 @@ def mutate_cell(rows: list[list[str]]) -> list[list[str]]:
 
     cell_bytes = bytearray(cell, 'latin1', errors='ignore')
 
-    cell_bytes = additive(cell_bytes)
+    cell_bytes = mutate(cell_bytes)
     new_rows[cell_row][cell_col] = cell_bytes.decode('latin1', errors='ignore')
 
     return new_rows
 
-csv_strategies = [mutate_cell]
+def delete_row(rows:list[list[str]]) -> list[list[str]]:
+    # delete a row
+    mutated = [r[:] for r in rows]
+    
+    if len(rows) == 1:
+        return rows
+    itr = max(1, random.randrange(1, len(mutated)))
+    for _ in range(itr):
+        mutated.remove(random.choice(mutated))
+        if len(mutated) == 1:
+            break
+    return mutated
+    
+csv_strategies = [
+    mutate_cell, 
+    # delete_row <-- not very useful for now...
+]
 
 def csv_mutate(rows: list[list[str]]) -> list[list[str]]:
     if not rows:
