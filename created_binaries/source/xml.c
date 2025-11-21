@@ -3,6 +3,20 @@
 #include <unistd.h>
 #include "../libxml/xml.h"
 
+void recurse(struct xml_element *node) {
+	printf(node->key);
+	printf("\n");
+	
+	if (node->first_child != NULL) {
+		recurse(node->first_child);
+	}
+	
+	if (node->next != NULL) {
+		recurse(node->next);
+	}
+}
+
+
 int main(void) {
 	struct xml_state st;
 
@@ -31,16 +45,9 @@ int main(void) {
 			return -1;
 		}
 
-		if (st.root) {
-			struct xml_element *e;
-
-			if ((e = xml_find(st.root, "hello/world"))) {
-				printf("Tag found: %s\n", e->key);
-				break;
-			}
-		}
+		recurse(st.root);
 	}
-
+	
 	xml_free(st.root);
 
 	return 0;
