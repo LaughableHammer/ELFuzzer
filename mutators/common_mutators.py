@@ -1,6 +1,44 @@
 import random
 import string
 
+def util_wrap_signed(value, width):
+    """
+    Helps wrap the integer from arithmatic mutation
+    to fit into the width that it used to be to prevent overflowing.    
+    """
+    mask = ((1 << width * 8) - 1)
+    truncated = value & mask
+    sign_bit = 1 << (width * 8 - 1)
+    return (truncated ^ sign_bit) - sign_bit
+
+def arithematic_mutate(item: bytearray) -> bytearray:
+    """
+    Finds random bytes with predetermined lengths, then
+    add/subtract from them
+    """
+    width = random.choice([1, 2, 4, 8])
+    if len(item) < width:
+        return item
+    try:
+        offset = random.randint(0, len(item) - width - 1)
+    except ValueError:
+        return item
+
+    start_idx = offset
+    end_idx = start_idx + width
+    obtained_bytes = item[start_idx:end_idx]
+    value = int.from_bytes(obtained_bytes, byteorder="little")
+
+    if random.random() < 0.7:
+        result = value + random.randint(-10, 10)
+    else:
+        result = value + random.randint(-100, 100)
+
+    result = util_wrap_signed(result, width)
+    
+    item[start_idx:end_idx] = result.to_bytes(length=width, byteorder="little", signed=True)
+    return item
+
 def extend(item: bytearray) -> bytearray:
     num_times = random.randint(0, 5)
     try:
@@ -18,7 +56,7 @@ def additive(item: bytearray) -> bytearray:
     if random.random() < 0.01:
         random_bytes = ''.join(random.choices(string.ascii_uppercase, k=random.randint(500, 999)))
     else:
-        random_bytes = f'{random.randint(-999999, 0)}'
+        random_bytes = f'{random.randint(-999999, 999999)}'
     item[idx:idx] = random_bytes.encode()
     return item
 
@@ -82,14 +120,22 @@ def random_char(item: bytearray) -> bytearray:
             end = start + len(value)
             return item[:start] + value + item[end:]
 
+def get_random_magic_num() -> int:
+    magic_numbers = [b'-1', b'0xFF', b'0x00', b'0xFFFF', b'0x0000', b'0x80000000', b'0x40000000', b'0x7FFFFFFF']
+    return int(random.choice(magic_numbers), 16)
+
 def mutate(part: bytearray):
     strategies = [
         extend,
         additive,
+        additive,
+        additive,
+        additive, # higher chance for BOF
         bitflip_mutation,
         byteflip_mutation,
+        random_char,
         fmtstring_mutation,
-        random_char
+        arithematic_mutate
     ]
     chosen_strategy = random.choice(strategies)
     return chosen_strategy(part)

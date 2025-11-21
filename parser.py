@@ -3,10 +3,12 @@ from io import StringIO # allows dealing with file-like objects in memory
 import agnostic_mutator
 import globalVar
 import json, csv
-import xml.etree.ElementTree as etree
+from lxml import etree
 from mutators.csv_mutator import csv_mutate
-from mutators.json_mutator import mutate
+from mutators.json_mutator import json_mutate
+from mutators.xml_mutator import xml_mutate
 from flatten_dict import flatten, unflatten
+
 
 def decode_bytes(b: bytes) -> str:
     try:
@@ -47,7 +49,7 @@ def detect_filetype(input_path: Path):
     # Check XML
     if text.startswith('<'):
         try:
-            etree.fromstring(text)
+            etree.fromstring(text.encode())
             globalVar.filetype = 'xml'
             print(f"File type detected: {globalVar.filetype}")
             return globalVar.filetype
@@ -72,7 +74,7 @@ def rows_to_csv(rows: list[list[str]]) -> str:
 
 def json_parser(text: str) -> str:
     json_dict = flatten(json.loads(text), reducer="dot")
-    mutated = mutate(json_dict)
+    mutated = json_mutate(json_dict)
     return json.dumps(unflatten(mutated, splitter="dot"))
 
 def csv_parser(text: str) -> str:
@@ -96,6 +98,10 @@ def csv_parser(text: str) -> str:
 def plaintext_parser(input: list[str]) -> str:
     return agnostic_mutator.plaintext_mutate(input)
 
+def xml_parser(input: str) -> str:
+    tree = etree.fromstring(input.encode())
+    mutated = xml_mutate(tree)
+    return (etree.tostring(mutated).decode())
 
 def parser(input_path: Path, file_content: bytes, seed: int) -> bytes:
     ft = detect_filetype(input_path)
@@ -108,6 +114,9 @@ def parser(input_path: Path, file_content: bytes, seed: int) -> bytes:
         case "json":
             parts = file_content.decode(errors='ignore')
             return (json_parser(parts) + '\n').encode()
+        case "xml":
+            parts = file_content.decode(errors='ignore')
+            return (xml_parser(parts) + '\n').encode()
         case _:
             # assume plaintext if no match
             parts = file_content.decode(errors='ignore')
