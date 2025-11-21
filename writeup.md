@@ -1,3 +1,5 @@
+We are submitting this believing that it is not late since give says it is due at 6pm. If you think it is late and would apply the late penalty, please mark Elisa Oda's submission instead.
+
 # Fuzzer Description
 ELFuzzer consists of 3 main components:
 1. Harness -> Execute payloads on each binary and determine if this results in an interesting behaviour (crash, invalid memory write, heap UF etc.)
@@ -55,7 +57,9 @@ Our something awesome is a web interface for the fuzzer, which provides the abil
 
 It then runs the fuzzer on a binary and brings the user to an interface. Flask Event streams will then bring live updates of the fuzizng progress, such as number of attempts, current input and completion status. It also has an ASCII art.
 
-This web interface is completed using Python Flask. It sits on top of the actual fuzzer, with some extra implementation (global variable) to facilitate information transfer between the fuzzer and the web interface.
+This web interface is completed using Python Flask. It sits on top of the actual fuzzer, with some extra implementation (global variable) to facilitate information transfer between the fuzzer and the web interface. To run the server inside the Docker container execute `./run_fuzzer_server.sh`.
+
+
 
 
 # Improvements 

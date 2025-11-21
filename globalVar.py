@@ -6,6 +6,7 @@ def init():
     
     filetype = ''
     corpus = []
+    mutator_state = {}
     
     status = {
         "executions": 0,
