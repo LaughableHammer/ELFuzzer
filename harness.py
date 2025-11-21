@@ -6,7 +6,6 @@ from pathlib import Path
 from colours import Colours
 from parser import parser
 
-# import agnostic_mutator
 
 RUN_TIME_PER_BINARY = 60000  # ms
 TIMEOUT = 3                 # seconds
@@ -25,9 +24,6 @@ ERRORS_EXPECTED = {
 
 def fuzzBinary(binary: Path, sample_input: Path) -> bool:
     start_time = time.time()
-
-    # TODO: using multiprocessing for multiple threads
-    # TODO: capture any other output by the binary such as stderr, library calls etc
 
     # read the input from example
     with open(sample_input, "rb") as file:
