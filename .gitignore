@@ -3,4 +3,5 @@ __pycache__
 fuzzer_output
 midpoint_submission
 josh
+.vscode
 venv

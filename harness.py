@@ -8,7 +8,6 @@ from parser import parser
 from flask_socketio import SocketIO, emit
 import globalVar
 
-# import agnostic_mutator
 
 BASE_RUN_TIME_PER_BINARY = 60000  # ms
 BASE_TIMEOUT = 3                 # seconds
@@ -29,17 +28,15 @@ def fuzzBinary(binary: Path, sample_input: Path, timeout=BASE_TIMEOUT,
                run_time_per_binary=BASE_RUN_TIME_PER_BINARY, updateWebsite=False) -> bool:
     start_time = time.time()
 
-    # TODO: using multiprocessing for multiple threads
-    # TODO: capture any other output by the binary such as stderr, library calls etc
-
     # read the input from example
     with open(sample_input, "rb") as file:
         file_content = file.read()
 
     i = 0
     while True:
-        # random.seed(i)
-
+        random.seed(i)
+        i += 1
+        
         execution_time = (time.time() - start_time) * 1000
         if execution_time > int(run_time_per_binary):
             print(
@@ -90,7 +87,6 @@ def fuzzBinary(binary: Path, sample_input: Path, timeout=BASE_TIMEOUT,
                 end="\r",
             )
 
-        i += 1
-        globalVar.status["executions"] += 1
+        globalVar.status["executions"] = i
         globalVar.status["last_input"] = input_bytes.decode('latin1').encode('unicode_escape').decode()
 

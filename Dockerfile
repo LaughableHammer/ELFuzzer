@@ -1,5 +1,5 @@
 FROM python:latest
- 
+
 COPY colours.py /
 COPY mutators /mutators
 COPY created_binaries /created_binaries
