@@ -126,15 +126,15 @@ def get_random_magic_num() -> int:
 
 def mutate(part: bytearray):
     strategies = [
-        # extend,
-        # additive,
-        # additive,
-        # additive,
-        # additive, # higher chance for BOF
-        # bitflip_mutation,
-        # byteflip_mutation,
-        # random_char,
-        # fmtstring_mutation,
+        extend,
+        additive,
+        additive,
+        additive,
+        additive, # higher chance for BOF
+        bitflip_mutation,
+        byteflip_mutation,
+        random_char,
+        fmtstring_mutation,
         arithematic_mutate
     ]
     chosen_strategy = random.choice(strategies)
