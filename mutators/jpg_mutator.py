@@ -1,6 +1,6 @@
 import random
 import globalVar
-from .common_mutators import additive, extend
+from .common_mutators import mutate
 import copy
 
 class JpgSegment:
@@ -16,13 +16,6 @@ class JpgSegment:
             # TODO: the strucutre is objectively wrong if we have to mod 255
             size = (2 + len(self.data)) % 255
         return self.marker + size.to_bytes(2, 'big') + self.data
-
-    def __repr__(self):
-        return (
-            f"JpgSegment(marker={self.marker!r}, "
-            f"data_len={len(self.data)}, "
-            f"data_preview={self.data[:20]!r}...)"
-        )
 
 
 def jpg_parse(file_content: bytes) -> list[JpgSegment]:
@@ -86,8 +79,8 @@ def _mutate_remove_segment(segments: list[JpgSegment]) -> list[JpgSegment]:
     return segments
 
 def _mutate_segment(segments: list[JpgSegment]) -> list[JpgSegment]:
-    # this is structure agnostic, will use a common_mutator
-    # TODO: implement
+    segment = random.choice(segments)
+    # segment.data = bytes(mutate(bytearray(segment.data)))
     return segments
 
 # TODO: will generate random data half the time, and may draw upon segments 

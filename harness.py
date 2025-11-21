@@ -46,13 +46,14 @@ def fuzzBinary(binary: Path, sample_input: Path, timeout=BASE_TIMEOUT,
             break
 
         input_bytes = parser(sample_input, file_content, seed=i)
+        # input_bytes = file_content
         try:
             command_output = subprocess.run(
                 binary, input=input_bytes, capture_output=True, timeout=timeout
             )
         except subprocess.TimeoutExpired:
             print("Timed out. Infinite loop detected")
-            return False  # Consider returning true
+            continue
 
         if command_output.returncode < 0:
             if (
@@ -80,7 +81,7 @@ def fuzzBinary(binary: Path, sample_input: Path, timeout=BASE_TIMEOUT,
             globalVar.status["completion"] = True
             return True
 
-        if i % 501 == 0 and i != 0:
+        if i % 500 == 0 and i != 0:
             execution_time = time.time() - start_time
             print(
                 f"{i}: \t{i//(execution_time)} attempts/s \tinput: {input_bytes[:50]}",
