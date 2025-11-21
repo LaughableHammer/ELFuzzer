@@ -5,22 +5,16 @@ import time
 import globalVar
 
 # binaries are here
-# binaries = Path('binaries/')
+binaries = Path('binaries/')
 
 # for additional testing
 # binaries = Path('created_binaries/')
-# binaries = [Path('created_binaries/jpegofdeath'), Path('binaries/jpg1'), Path('created_binaries/pdf'), ]
-# binaries = [Path('created_binaries/jpegofdeath'), Path('created_binaries/pdf'), ]
-binaries = [Path('created_binaries/jpegofdeath'), Path('binaries/jpg1'), ]
-# binaries = [Path('created_binaries/xml')]
 
 overall_start = time.time()
 
 results = []
 
-# for binary in binaries:
-# for binary in binaries.iterdir():
-for binary in binaries:
+for binary in binaries.iterdir():
     globalVar.init() # Reset global values
     print(f"{Colours.UNDERLINE}Fuzzing binary: {binary.name}{Colours.RESET}")
     

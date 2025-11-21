@@ -1,7 +1,7 @@
 # Fuzzer Description
 ELFuzzer consists of 3 main components:
 1. Harness -> Execute payloads on each binary and determine if this results in an interesting behaviour (crash, invalid memory write, heap UF etc.)
-2. Parser -> Firstly, detects the filetype and then caches this value and then converts the sample input into a mutateable object depending on the file type.
+2. Parser -> Detects the filetype of the input and then caches this value. This input is then converted to mutateable object depending on the file type.
 2. Mutator -> Perform various mutation strategies on the sample input to seed interesting behaviour, with varying techniques for each file type along with a set of common mutators that are shared between each.
 
 ## Mutations
@@ -13,7 +13,8 @@ Our fuzzer currently uses the following mutation strategies which in most cases 
 - For XML -> for an xml tree, add nodes to it, remove nodes from it, modify the value of particular nodes, add remove and modify attributes of an xml object, change the tag of a node, change the root, swap the order of two nodes and add additional depth to the xml tree
 - For JPEG -> parsing the jpeg to split it into distinct segments to duplicate, change the marker of in the header, remove, and mutate. When its length changed the metadata is usually updated to ensure it remains parsable.
 - For ELF -> adding sections to the elf while ensuring that the metadata is correct, performing general mutations within each section and looking for strings contained within the program to add format specifiers to
-- For PDF -> 
+- For PDF -> changing numbers contained within the file's metadata and mutating text within compressed streams
+
 
 The shared common mutator library is usually called in some capacity in all of the mutators, providing efficient access to shared mutators.
 
@@ -46,17 +47,21 @@ allowing for tweaking and optimisation of various parameters.
 # Bugs we find
 The fuzzer is effective at finding overflow-based vulnerabilities in binaries, by spamming very large inputs wherever possible and also via duplication of values within the data structure of the relevant file, whatever the format may be (adding nodes in XML, duplicating lines in CSV etc.).
 Additionally, format string vulnerabilities are also detected by adding %s and %n to inputs to cause incorrect dereferencing or writing data to a part of memory which can cause an error/crash. This is highly effective and wherever user input is used as the format string for any relevant function, the vulnerability is usually discovered.
+
 Replacing some values with random ints and magic chars like MIN_INT, MAX_INT, -1, 0xFF etc, we are able to discover incorrect error checking (such as writing past the end of an array) and exploit edge cases that weren't considered by the programmer.
 
 The fuzzer can find bugs with how CSVs and JSON files are parsed, it can look for buffer overflows in text and csv and json files by modifying random values to be very large. It can also detect format string vulnerabilities in plaintext input binaries by placing crash inducing format specifiers randomly in the input.
 
-# Something Awesome - UPDATE THIS WHEN DONE
-Our something awesome is a web interface for the fuzzer, which provides the ability to submit a binary and an input file which then gets fuzzed by the program. We can customise program parameters such as program runtime and timeout per binary run.
-We utilise websockets to provide live statistics while the fuzzer runs giving a visually appealing dashboard for the user. The longer the fuzzer runs, the more deepfried the meme gets - or something something XD.  
+# Something Awesome
+Our something awesome is a web interface for the fuzzer, which provides the ability to submit a binary and an input file which then gets fuzzed by the program. We can customise program parameters such as program runtime and timeout per binary run. 
+
+It then runs the fuzzer on a binary and brings the user to an interface. Flask Event streams will then bring live updates of the fuzizng progress, such as number of attempts, current input and completion status. It also has an ASCII art.
+
+This web interface is completed using Python Flask. It sits on top of the actual fuzzer, with some extra implementation (global variable) to facilitate information transfer between the fuzzer and the web interface.
 
 
 # Improvements 
 Current limitations of the fuzzer include
 - No multithreading resulting in reduced fuzzing speeds
-- lack of coverage based testing resulting in less personalised fuzzing
+- Lack of coverage based testing resulting in less personalised fuzzing
 - Lack of in-memory resetting which results in reduced fuzzing speeds

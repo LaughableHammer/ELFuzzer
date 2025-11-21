@@ -92,10 +92,8 @@ def pdf_mutate(sample_input: bytes) -> bytes:
         _mutate_replace_number,
         _mutate_replace_text
     ]
-
     strat_used = random.choice(strategies)
 
     mutated_elf_bytes = strat_used(chosen_input)
 
     return mutated_elf_bytes
-
