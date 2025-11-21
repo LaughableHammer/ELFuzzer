@@ -50,14 +50,17 @@ Replacing some values with random ints and magic chars like MIN_INT, MAX_INT, -1
 
 The fuzzer can find bugs with how CSVs and JSON files are parsed, it can look for buffer overflows in text and csv and json files by modifying random values to be very large. It can also detect format string vulnerabilities in plaintext input binaries by placing crash inducing format specifiers randomly in the input.
 
-# Something Awesome - UPDATE THIS WHEN DONE
-Our something awesome is a web interface for the fuzzer, which provides the ability to submit a binary and an input file which then gets fuzzed by the program. We can customise program parameters such as program runtime and timeout per binary run.
-We utilise websockets to provide live statistics while the fuzzer runs giving a visually appealing dashboard for the user. The longer the fuzzer runs, the more deepfried the meme gets - or something something XD.  
+# Something Awesome
+Our something awesome is a web interface for the fuzzer, which provides the ability to submit a binary and an input file which then gets fuzzed by the program. We can customise program parameters such as program runtime and timeout per binary run. 
+
+It then runs the fuzzer on a binary and brings the user to an interface. Flask Event streams will then bring live updates of the fuzizng progress, such as number of attempts, current input and completion status. It also has an ASCII art.
+
+This web interface is completed using Python Flask. It sits on top of the actual fuzzer, with some extra implementation (global variable) to facilitate information transfer between the fuzzer and the web interface.
 
 
 # Improvements 
 Current limitations of the fuzzer include
 - No multithreading resulting in reduced fuzzing speeds
-- lack of coverage based testing resulting in less personalised fuzzing (REMOVE THIS IS IT GETS IMPLEMENTED!!!!!!!!!!)
+- lack of coverage based testing resulting in less personalised fuzzing
 - Lack of PDF specific fuzzing techniques
 - Lack of in-memory resetting which results in reduced fuzzing speeds
