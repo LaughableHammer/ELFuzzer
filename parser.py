@@ -49,7 +49,7 @@ def detect_filetype(input_path: Path):
     # Check XML
     if text.startswith('<'):
         try:
-            etree.fromstring(text)
+            etree.fromstring(text.encode())
             globalVar.filetype = 'xml'
             print(f"File type detected: {globalVar.filetype}")
             return globalVar.filetype
@@ -98,8 +98,8 @@ def csv_parser(text: str) -> str:
 def plaintext_parser(input: list[str]) -> str:
     return agnostic_mutator.plaintext_mutate(input)
 
-def xml_parser(_input: str) -> str:
-    tree = etree.fromstring(_input)
+def xml_parser(input: str) -> str:
+    tree = etree.fromstring(input.encode())
     mutated = xml_mutate(tree)
     return (etree.tostring(mutated).decode())
 

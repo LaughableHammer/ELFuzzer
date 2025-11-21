@@ -1,6 +1,44 @@
 import random
 import string
 
+def util_wrap_signed(value, width):
+    """
+    Helps wrap the integer from arithmatic mutation
+    to fit into the width that it used to be to prevent overflowing.    
+    """
+    mask = ((1 << width * 8) - 1)
+    truncated = value & mask
+    sign_bit = 1 << (width * 8 - 1)
+    return (truncated ^ sign_bit) - sign_bit
+
+def arithematic_mutate(item: bytearray) -> bytearray:
+    """
+    Finds random bytes with predetermined lengths, then
+    add/subtract from them
+    """
+    width = random.choice([1, 2, 4, 8])
+    if len(item) < width:
+        return item
+    try:
+        offset = random.randint(0, len(item) - width - 1)
+    except ValueError:
+        return item
+
+    start_idx = offset
+    end_idx = start_idx + width
+    obtained_bytes = item[start_idx:end_idx]
+    value = int.from_bytes(obtained_bytes, byteorder="little")
+
+    if random.random() < 0.7:
+        result = value + random.randint(-10, 10)
+    else:
+        result = value + random.randint(-100, 100)
+
+    result = util_wrap_signed(result, width)
+    
+    item[start_idx:end_idx] = result.to_bytes(length=width, byteorder="little", signed=True)
+    return item
+
 def extend(item: bytearray) -> bytearray:
     num_times = random.randint(0, 5)
     try:
@@ -88,15 +126,16 @@ def get_random_magic_num() -> int:
 
 def mutate(part: bytearray):
     strategies = [
-        extend,
-        additive,
-        additive,
-        additive,
-        additive, # higher chance for BOF
-        bitflip_mutation,
-        byteflip_mutation,
-        random_char,
-        fmtstring_mutation,
+        # extend,
+        # additive,
+        # additive,
+        # additive,
+        # additive, # higher chance for BOF
+        # bitflip_mutation,
+        # byteflip_mutation,
+        # random_char,
+        # fmtstring_mutation,
+        arithematic_mutate
     ]
     chosen_strategy = random.choice(strategies)
     return chosen_strategy(part)
