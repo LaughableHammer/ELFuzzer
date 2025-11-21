@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Fuzzer - Welcome{% endblock %}
+
+{% block content %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fuzzer Live Stats</title>
+</head>
+<body>
+    <h1>Fuzzer Status</h1>
+
+    <p>Executions: <span id="exec">0</span></p>
+    <p>Completion Status: <span id="crash">0</span></p>
+    <p>Last Input: <pre id="input" class = "overflow-auto">...</pre></p>
+    <p>Coverage: <span id="cov">0%</span></p>
+
+    <pre>
+                            _
+                 .'` '`.
+              .-", @ `, `.
+             '-=;      ;   `.
+                 \    :      `-.
+                 /    ';        `.
+                /      .'         `.
+                |     (      `.     `-.._
+                 \     \` ` `. \         `-.._
+                  `.   ;`-.._ `-`._.-. `-._   `-._
+                    `..'     `-.```.  `-._ `-.._.'
+                      `--..__..-`--'      `-.,'
+                         `._)`/
+                          /  /
+                         /--(
+                      -./,--'`-,
+                   ,^--(                     hjw/gs
+                   ,--' `-,
+    </pre>
+    <em>Ssparrow please help us</em>
+
+    <script>
+        const events = new EventSource("/events");
+
+        events.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+
+            document.getElementById("exec").textContent = data.executions;
+            document.getElementById("crash").textContent = data.completion;
+            document.getElementById("input").textContent = data.last_input;
+            document.getElementById("cov").textContent = data.coverage + "%";
+        };
+    </script>
+</body>
+</html>
+{% endblock %}

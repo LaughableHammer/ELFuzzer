@@ -66,10 +66,12 @@
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ runtime, timeout, binary })
-            });
+            }) .then(r => r.json())
+            .then (res => {
+                alert(res.message);
+                window.location.href = "/stats"
+            })
 
-            const data = await response.json();
-            alert(data.message);
         } catch (error) {
             alert('Error starting fuzzing: ' + error.message);
         }

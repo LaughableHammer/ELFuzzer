@@ -1,9 +1,11 @@
-from flask import Flask, render_template, request, jsonify, send_from_directory
+from flask import Flask, render_template, request, jsonify, send_from_directory, Response
 import os
 from pathlib import Path
 from flask_socketio import SocketIO, emit
 import threading
 from harness import fuzzBinary
+import globalVar
+import json, time, threading
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -27,6 +29,19 @@ def fuzz():
 def serve_image(filename):
     return send_from_directory('static/', filename)
 
+@app.route("/stats")
+def show_statistics():
+    return render_template("stats.html")
+
+@app.route('/events')
+def events():
+    def stream():
+        while True:
+            data = json.dumps(globalVar.status)
+            yield f"data: {data}\n\n"
+            time.sleep(0.2)  # 5 updates per second
+    return Response(stream(), mimetype='text/event-stream')
+
 
 @app.route('/api/start-fuzzing', methods=['POST'])
 def start_fuzzing():
@@ -36,9 +51,7 @@ def start_fuzzing():
 
     binary = Path(f"created_binaries/{data.get('binary', '')}")
     sample_input = Path(f'example_inputs/{binary.name}.txt')
-
-
-    
+    globalVar.init()
     fuzzing_thread = threading.Thread(target=fuzzBinary, 
                                       args=(binary, sample_input, timeout, runtime, True))
     fuzzing_thread.start()

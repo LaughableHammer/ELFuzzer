@@ -6,6 +6,7 @@ from pathlib import Path
 from colours import Colours
 from parser import parser
 from flask_socketio import SocketIO, emit
+import globalVar
 
 # import agnostic_mutator
 
@@ -37,13 +38,14 @@ def fuzzBinary(binary: Path, sample_input: Path, timeout=BASE_TIMEOUT,
 
     i = 0
     while True:
-        random.seed(i)
+        # random.seed(i)
 
         execution_time = (time.time() - start_time) * 1000
-        if execution_time > run_time_per_binary:
+        if execution_time > int(run_time_per_binary):
             print(
                 f"{Colours.BOLD}{Colours.RED}{run_time_per_binary}ms have elapsed, moving onto next binary                                         {Colours.RESET}"
             )
+            globalVar.status["completion"] = False
             break
 
         input_bytes = parser(sample_input, file_content, seed=i)
@@ -78,7 +80,7 @@ def fuzzBinary(binary: Path, sample_input: Path, timeout=BASE_TIMEOUT,
             # write output to file
             with open(f"fuzzer_output/bad_{binary.name}.txt", "wb") as file:
                 file.write(input_bytes)
-
+            globalVar.status["completion"] = True
             return True
 
         if i % 501 == 0 and i != 0:
@@ -89,3 +91,6 @@ def fuzzBinary(binary: Path, sample_input: Path, timeout=BASE_TIMEOUT,
             )
 
         i += 1
+        globalVar.status["executions"] += 1
+        globalVar.status["last_input"] = input_bytes.decode('latin1').encode('unicode_escape').decode()
+
