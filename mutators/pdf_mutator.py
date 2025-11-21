@@ -2,8 +2,6 @@ import random
 import globalVar
 from .common_mutators import additive, extend
 import copy
-<<<<<<< HEAD
-=======
 import re
 
 import pikepdf
@@ -79,7 +77,6 @@ def _mutate_replace_number(pdf_bytes: bytes) -> bytes:
 
     return mutated_bytes
 
->>>>>>> 9bd8813337e6acd175f40eb3a3ae26539b1cf83c
 
 def pdf_mutate(sample_input: bytes) -> bytes:
     if not globalVar.corpus:
@@ -88,11 +85,7 @@ def pdf_mutate(sample_input: bytes) -> bytes:
         globalVar.corpus = globalVar.corpus[10:]
     elif random.random() < 0.3: #0.3 chance of adding a fresh copy
         globalVar.corpus.append(sample_input)
-<<<<<<< HEAD
-=======
 
     strategies = [
         _mutate_replace_number
     ]
-
->>>>>>> 9bd8813337e6acd175f40eb3a3ae26539b1cf83c
