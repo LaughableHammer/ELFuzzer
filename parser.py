@@ -136,15 +136,23 @@ def parser(input_path: Path, file_content: bytes, seed: int) -> bytes:
             parts = file_content.decode(errors='ignore')
             return (json_parser(parts) + '\n').encode()
         case "jpg":
-            try:
-                return jpg_mutate(file_content)
-            except Exception as e:
-                print(f"{Colours.BOLD}{Colours.RED} Exception in jpg_mutate: `{e}` {Colours.RESET}")
-                return file_content
+            # try:
+            return jpg_mutate(file_content)
+            # except Exception as e:
+                # print(f"{Colours.BOLD}{Colours.RED} Exception in jpg_mutate: `{e}` {Colours.RESET}")
+                # return file_content
         case "elf":
-            return elf_mutate(file_content, seed)
+            try:
+                return elf_mutate(file_content, seed)
+            except Exception as e:
+                print(f"{Colours.BOLD}{Colours.RED} Exception in elf_mutate: `{e}` {Colours.RESET}")
+                return file_content
         case "pdf":
-            return pdf_mutate(file_content)
+            try:
+                return pdf_mutate(file_content)
+            except Exception as e:
+                print(f"{Colours.BOLD}{Colours.RED} Exception in pdf_mutate: `{e}` {Colours.RESET}")
+                return file_content
         case "xml":
             parts = file_content.decode(errors='ignore')
             return (xml_parser(parts) + '\n').encode()

@@ -7,12 +7,14 @@ ELFuzzer consists of 3 main components:
 ## Mutations
 
 Our fuzzer currently uses the following mutation strategies which in most cases are round-robin'd between:
-- For plain text -> extend existing input (via duplication), add random bytes to input, bitflips, byteflips, adding format strings randomly and adding magic bytes (-1, MAX_INT etc.) 
+- For plain text (or unimplemented) -> extend existing input (via duplication), add random bytes to input, bitflips, byteflips, adding format strings randomly, adding magic bytes (-1, MAX_INT etc.), and performing arithmetic on the input by treating sequences of bytes as numbers and performing addition and subtraction with small random numbers
 - For JSON  -> duplicate a random entry, modify a random entry, add additional depth in a location, add an additional JSON object in a new branch, add a new entry, modify a key randomly, remove entries, and set a value to null.
 - For CSV -> mutate a random cell, duplicate some rows
 - For XML -> for an xml tree, add nodes to it, remove nodes from it, modify the value of particular nodes, add remove and modify attributes of an xml object, change the tag of a node, change the root, swap the order of two nodes and add additional depth to the xml tree
-- For JPEG -> duplicate random parts of the jpeg, modify jpeg marker segment, remove and mutate segments
+- For JPEG -> parsing the jpeg to split it into distinct segments to duplicate, change the marker of in the header, remove, and mutate. When its length changed the metadata is usually updated to ensure it remains parsable.
+- For ELF -> adding sections to the elf while ensuring that the metadata is correct, performing general mutations within each section and looking for strings contained within the program to add format specifiers to
 - For PDF -> changing numbers contained within the file's metadata and mutating text within compressed streams
+
 
 The shared common mutator library is usually called in some capacity in all of the mutators, providing efficient access to shared mutators.
 
@@ -61,6 +63,5 @@ This web interface is completed using Python Flask. It sits on top of the actual
 # Improvements 
 Current limitations of the fuzzer include
 - No multithreading resulting in reduced fuzzing speeds
-- lack of coverage based testing resulting in less personalised fuzzing
-- Lack of PDF specific fuzzing techniques
+- Lack of coverage based testing resulting in less personalised fuzzing
 - Lack of in-memory resetting which results in reduced fuzzing speeds
