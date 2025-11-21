@@ -5,11 +5,11 @@ import time
 import globalVar
 
 # binaries are here
-# binaries = Path('binaries/')
+binaries = Path('binaries/')
 
 # for additional testing
-binaries = Path('created_binaries/')
-# binaries = [Path('binaries/csv1'), Path('binaries/json1'), Path('binaries/csv2')]
+# binaries = Path('created_binaries/')
+# binaries = [Path('binaries/json1'), Path('binaries/csv2')]
 
 overall_start = time.time()
 
