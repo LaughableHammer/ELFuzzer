@@ -9,6 +9,7 @@ binaries = Path('binaries/')
 
 # for additional testing
 # binaries = Path('created_binaries/')
+# binaries = [Path('binaries/json1'), Path('binaries/csv2')]
 # binaries = [Path('created_binaries/xml')]
 
 overall_start = time.time()
