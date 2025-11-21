@@ -31,4 +31,4 @@ echo "Docker container built successfully"
 # Run the image, mounting /binaries as read-only and /fuzzer_output
 echo "Running Fuzzer"
 echo "Please visit http://localhost:5000"
-docker run -v ./binaries:/binaries:ro -v ./example_inputs:/example_inputs:ro -v ./fuzzer_output:/fuzzer_output server-fuzzer-image
+docker run -p 5000:5000 -v ./binaries:/binaries:ro -v ./example_inputs:/example_inputs:ro -v ./fuzzer_output:/fuzzer_output server-fuzzer-image

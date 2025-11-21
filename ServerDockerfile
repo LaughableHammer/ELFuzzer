@@ -1,6 +1,7 @@
 FROM python:latest
 
 COPY colours.py /
+COPY server.py /
 COPY mutators /mutators
 COPY created_binaries /created_binaries
 COPY harness.py /
@@ -9,6 +10,8 @@ COPY fuzzer.py /
 COPY globalVar.py /
 COPY agnostic_mutator.py /
 COPY requirements.txt /
+COPY /static /static
+COPY /templates /templates
 
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
