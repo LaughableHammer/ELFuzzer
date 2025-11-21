@@ -88,6 +88,5 @@ def pdf_mutate(sample_input: bytes) -> bytes:
 
     strategies = [
         _mutate_replace_number
-        
     ]
 

@@ -18,13 +18,6 @@ def _mutate_dupe_section(elf: lief.ELF.Binary, elf_bytes: bytes) -> bytes:
     section.name += "_duplicate" # pyright: ignore[reportOperatorIssue]
     elf.add(section)
 
-    # name = section.name
-    # if type(name) == "bytes":
-    #     name = name.decode() # pyright: ignore[reportAttributeAccessIssue]
-
-    # duplicate = lief.ELF.Section(name + "_duplicate") # pyright: ignore[reportOperatorIssue]
-    # duplicate.content = list(section.content)
-
     return encode_elf(elf)
     
 def _mutate_within_section(elf: lief.ELF.Binary, elf_bytes: bytes) -> bytes:
@@ -58,10 +51,6 @@ def _mutate_within_section(elf: lief.ELF.Binary, elf_bytes: bytes) -> bytes:
 
 
 
-# def _mutate_string(elf: lief.ELF.Binary, elf_bytes: bytes) -> bytes:
-    
-#     return elf_bytes
-
 def find_strings(elf_bytes: bytes) -> list[tuple[int, int]]:
     locations = []
 
@@ -74,7 +63,6 @@ def find_strings(elf_bytes: bytes) -> list[tuple[int, int]]:
             string_start = i+1
 
     return locations
-
 
 
 def elf_mutate(sample_input: bytes, seed: int) -> bytes:
@@ -94,7 +82,6 @@ def elf_mutate(sample_input: bytes, seed: int) -> bytes:
     strategies = [
         _mutate_dupe_section,
         _mutate_within_section,
-        # _mutate_add_segment,
     ]
 
     strat_used = random.choice(strategies)
