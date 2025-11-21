@@ -28,8 +28,6 @@ def _mutate_dupe_section(elf: lief.ELF.Binary, elf_bytes: bytes) -> bytes:
     return encode_elf(elf)
     
 def _mutate_within_section(elf: lief.ELF.Binary, elf_bytes: bytes) -> bytes:
-    boundaries = []
-
     bio = BytesIO(elf_bytes)
     elftools_elf = ELFFile(bio)
     sections = list(elftools_elf.iter_sections())
@@ -87,6 +85,8 @@ def elf_mutate(sample_input: bytes, seed: int) -> bytes:
         globalVar.corpus = globalVar.corpus[10:]
     elif random.random() < 0.3: #0.3 chance of adding a fresh copy
         globalVar.corpus.append(sample_input)
+
+    lief.logging.disable()
 
     chosen_input = random.choice(globalVar.corpus)
     elf = lief.parse(chosen_input)

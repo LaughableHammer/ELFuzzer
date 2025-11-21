@@ -86,5 +86,3 @@ def fuzzBinary(binary: Path, sample_input: Path) -> bool:
                 f"{i}: \t{i//(execution_time)} attempts/s \tinput: {input_bytes[:50]}",
                 end="\r",
             )
-
-        i += 1
