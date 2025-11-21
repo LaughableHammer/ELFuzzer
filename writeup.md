@@ -1,7 +1,7 @@
 # Fuzzer Description
 ELFuzzer consists of 3 main components:
 1. Harness -> Execute payloads on each binary and determine if this results in an interesting behaviour (crash, invalid memory write, heap UF etc.)
-2. Parser -> Firstly, detects the filetype and then caches this value and then converts the sample input into a mutateable object depending on the file type.
+2. Parser -> Detects the filetype of the input and then caches this value. This input is then converted to mutateable object depending on the file type.
 2. Mutator -> Perform various mutation strategies on the sample input to seed interesting behaviour, with varying techniques for each file type along with a set of common mutators that are shared between each.
 
 ## Mutations
@@ -44,6 +44,7 @@ allowing for tweaking and optimisation of various parameters.
 # Bugs we find
 The fuzzer is effective at finding overflow-based vulnerabilities in binaries, by spamming very large inputs wherever possible and also via duplication of values within the data structure of the relevant file, whatever the format may be (adding nodes in XML, duplicating lines in CSV etc.).
 Additionally, format string vulnerabilities are also detected by adding %s and %n to inputs to cause incorrect dereferencing or writing data to a part of memory which can cause an error/crash. This is highly effective and wherever user input is used as the format string for any relevant function, the vulnerability is usually discovered.
+
 Replacing some values with random ints and magic chars like MIN_INT, MAX_INT, -1, 0xFF etc, we are able to discover incorrect error checking (such as writing past the end of an array) and exploit edge cases that weren't considered by the programmer.
 
 The fuzzer can find bugs with how CSVs and JSON files are parsed, it can look for buffer overflows in text and csv and json files by modifying random values to be very large. It can also detect format string vulnerabilities in plaintext input binaries by placing crash inducing format specifiers randomly in the input.
