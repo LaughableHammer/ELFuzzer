@@ -50,6 +50,8 @@ def csv_mutate(rows: list[list[str]]) -> list[list[str]]:
         globalVar.corpus.append(rows)
     elif len(globalVar.corpus) > 20:
         globalVar.corpus = globalVar.corpus[10:]
+    if random.random() < 0.01:
+        globalVar.corpus.insert(0, rows)
 
     src = random.choice(globalVar.corpus)
     mutated = [r.copy() for r in src]
