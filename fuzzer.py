@@ -16,6 +16,7 @@ overall_start = time.time()
 
 results = []
 
+# for binary in binaries:
 for binary in binaries.iterdir():
 # for binary in binaries:
     globalVar.init() # Reset global values

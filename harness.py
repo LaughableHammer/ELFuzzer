@@ -36,7 +36,8 @@ def fuzzBinary(binary: Path, sample_input: Path) -> bool:
     i = 0
     while True:
         random.seed(i)
-
+        i += 1
+        
         execution_time = (time.time() - start_time) * 1000
         if execution_time > RUN_TIME_PER_BINARY:
             print(
@@ -85,5 +86,3 @@ def fuzzBinary(binary: Path, sample_input: Path) -> bool:
                 f"{i}: \t{i//(execution_time)} attempts/s \tinput: {input_bytes[:50]}",
                 end="\r",
             )
-
-        i += 1
