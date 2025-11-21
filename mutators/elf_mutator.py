@@ -1,6 +1,6 @@
 import random
 import globalVar
-from .common_mutators import additive, extend
+from .common_mutators import mutate, get_format_specifier
 from elftools.elf.elffile import ELFFile
 import copy
 from io import BytesIO
@@ -46,8 +46,9 @@ def _mutate_within_section(elf: lief.ELF.Binary, elf_bytes: bytes) -> bytes:
         section2 = random.choice(sections[i+1:])
         start, end = section1["sh_offset"], section2["sh_offset"] + section2["sh_size"]
 
-    # TODO: plaintext mutation between start and end
-    return elf_bytes
+    elf_bytearray = bytearray(elf_bytes)
+    mutated_bytearray = mutate(elf_bytearray[start:end])
+    return bytes(mutated_bytearray)
 
 
 
@@ -90,7 +91,7 @@ def elf_mutate(sample_input: bytes, seed: int) -> bytes:
         # Systematically try to place format specifiers into each of the strings
         # strat_used = maybe function from common?
         string_location = globalVar.mutator_state["string_queue"].pop()
-        format_specifier = b"%10000$s"
+        format_specifier = get_format_specifier().encode()
 
         mutated_elf_bytes = chosen_input[:string_location[0]] + format_specifier + chosen_input[len(format_specifier) + string_location[0]:]
 

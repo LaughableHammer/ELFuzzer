@@ -1,6 +1,6 @@
 import random
 import globalVar
-from .common_mutators import additive, extend
+from .common_mutators import mutate, get_random_magic_num
 import copy
 import re
 
@@ -20,10 +20,12 @@ def get_content_streams(obj, seen=None):
     if seen is None:
         seen = set()
 
-    if obj.object_id is not None:
-        if obj.object_id in seen:
+    pdf_obj = getattr(obj, "obj", obj)
+    obj_id = getattr(pdf_obj, "object_id", None)
+    if obj_id is not None:
+        if obj_id in seen:
             return
-        seen.add(obj.object_id)
+        seen.add(obj_id)
 
     contents = obj.get("/Contents", None)
     if contents:
@@ -49,18 +51,13 @@ def _mutate_replace_text(pdf_bytes: bytes):
 
     for page in pdf.pages:
         for stream in get_content_streams(page):
-            data = stream.read_bytes()  # decompressed
-            print(data)
-            # data = data.replace(old, new)
-            # stream.write(data)         # pikepdf auto-recompresses if needed
+            data = stream.read_bytes()  # decompressed  
+            stream.write(bytes(mutate(bytearray(data))))
 
     return encode_pdf(pdf)
 
 
-
 def _mutate_replace_number(pdf_bytes: bytes) -> bytes:
-    strings = []
-
     def mask(m):
         return b"a" * (m.end() - m.start())
 
@@ -72,8 +69,11 @@ def _mutate_replace_number(pdf_bytes: bytes) -> bytes:
 
     start, end = number_to_replace.start(), number_to_replace.end()
 
-    # TODO: pick random number
-    mutated_bytes = pdf_bytes[:start] + b"67" + pdf_bytes[end:]
+    if random.random() < 0.1:
+        number = get_random_magic_num()
+    else:
+        number = random.randint(-10, 300)
+    mutated_bytes = pdf_bytes[:start] + str(number).encode() + pdf_bytes[end:]
 
     return mutated_bytes
 
@@ -86,7 +86,16 @@ def pdf_mutate(sample_input: bytes) -> bytes:
     elif random.random() < 0.3: #0.3 chance of adding a fresh copy
         globalVar.corpus.append(sample_input)
 
+    chosen_input = random.choice(globalVar.corpus)
+
     strategies = [
-        _mutate_replace_number
+        _mutate_replace_number,
+        _mutate_replace_text
     ]
+
+    strat_used = random.choice(strategies)
+
+    mutated_elf_bytes = strat_used(chosen_input)
+
+    return mutated_elf_bytes
 

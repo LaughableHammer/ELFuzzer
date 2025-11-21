@@ -84,6 +84,12 @@ def byteflip_mutation(part: bytearray) -> bytearray:
         data[byte_idx] ^= 0xFF
     return data
 
+def get_format_specifier() -> str:
+    if random.random() < 0.1:
+        return random.choice(["%10000$s", "%%s%%s"])
+    else:
+        return f"%{random.randint(1, 6)}$n" # %n usually is more reliable to crash
+
 def fmtstring_mutation(part: bytearray) -> bytearray:
     data = part[:]
     if not part:
@@ -95,8 +101,7 @@ def fmtstring_mutation(part: bytearray) -> bytearray:
         index_to_modify = random.sample(range(len(part)), k=count)
     
     for index in index_to_modify:
-        fmt = f"%{random.randint(1, 6)}$n" # %n usually is more reliable to crash
-        data = data[index:] + fmt.encode() + data[:index]
+        data = data[index:] + get_format_specifier().encode() + data[:index]
         
     return data
 
@@ -121,10 +126,10 @@ def random_char(item: bytearray) -> bytearray:
             return item[:start] + value + item[end:]
 
 def get_random_magic_num() -> int:
-    magic_numbers = [b'-1', b'0xFF', b'0x00', b'0xFFFF', b'0x0000', b'0x80000000', b'0x40000000', b'0x7FFFFFFF']
+    magic_numbers = [b'-1', b'0xFF', b'0x00', b'0xFFFF', b'0x0000', b'0x80000000', b'0x40000000', b'0x7FFFFFFF', b'9999999999999999', b'-9999999999999999']
     return int(random.choice(magic_numbers), 16)
 
-def mutate(part: bytearray):
+def mutate(part: bytearray, keep_length=False):
     strategies = [
         extend,
         additive,
@@ -137,5 +142,6 @@ def mutate(part: bytearray):
         fmtstring_mutation,
         arithematic_mutate
     ]
+
     chosen_strategy = random.choice(strategies)
     return chosen_strategy(part)
