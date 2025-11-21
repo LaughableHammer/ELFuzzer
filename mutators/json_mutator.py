@@ -1,17 +1,24 @@
 """
 Testing json libraries
 """
-from flatten_dict import unflatten
+from .common_mutators import mutate, get_random_magic_num
 import globalVar
 import random
 import string
-import json
 import copy
 
 def util_gen_random_str(len = 5):
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=len))
 
-def mutate(data: dict) -> dict:
+def _mutate_value(item:str) -> str:
+    byte_value = bytearray(item, "utf-8")
+    value = mutate(byte_value)
+    try:
+        return value.decode()
+    except:
+        return value.hex()
+
+def json_mutate(data: dict) -> dict:
     """
     Takes data and calls one of the mutate functions
     """
@@ -82,20 +89,19 @@ def _mutate_change_entry(data: list) -> list:
             value = []
             for _ in range(len(data[path]) + random.randint(0, 5)):
                 # value.append(random.randbytes(5))
-                value.append(util_gen_random_str(10))
+                value.append(_mutate_value(util_gen_random_str(10)))
         elif isinstance(data[path], str):
-            # value = random.randbytes(10) # for now bytes do not work and will crash.
-            value = util_gen_random_str(10)
+            value = _mutate_value(util_gen_random_str(10))
+
         elif isinstance(data[path], int):
-            value = random.randint(0, 999)
+            value = get_random_magic_num()
         else:
-            value = util_gen_random_str(10)
+            value = _mutate_value(util_gen_random_str(10))
         data[path] = value
     # determine if a return object is wanted or just change in place
     return data
            
 def _mutate_add_depth(data):
-    return data
     """
     Make the JSON object deeper, using random generated keys (or duplicate)
     Values will be set to some random generic alphanumerical string
@@ -105,10 +111,23 @@ def _mutate_add_depth(data):
     itr = int(len(data) * 0.1)
     if (itr < 5):
         itr = random.randint(0, 3)
-    key_list = list(data.keys())
+    
     for _ in range(itr):
-        # TODO: gotta finish
-        pass
+        key = random.choice(list(data.keys()))
+        sub_root = {}
+        curr = sub_root
+
+        depth = random.randint(1, 10)
+        for i in range(depth):
+            new_key = _mutate_value(util_gen_random_str(10))
+            if i == depth - 1:
+                curr[new_key] = _mutate_value(util_gen_random_str(10))
+            else:
+                curr[new_key] = {}
+                curr = curr[new_key]
+
+        data[key] = sub_root
+    return data
             
 def _mutate_add_branch(data):
     """
@@ -133,7 +152,7 @@ def _mutate_add_branch(data):
             else:
                 path = path + "." + nonce
         data[path] = {
-            util_gen_random_str(): util_gen_random_str()
+            _mutate_value(util_gen_random_str(10)): _mutate_value(util_gen_random_str(10))
         }
     return data
 
@@ -149,13 +168,13 @@ def _mutate_add_entry(data):
     for _ in range(itr):
         if random.random() < 0.25:
             if random.random() > 0.5:
-                value = util_gen_random_str()
+                value = _mutate_value(util_gen_random_str(10))
             else:
-                value = random.randint(0, 1000)
+                value = get_random_magic_num()
         else:
             value = []
             for i in range(random.randint(0, 10)):
-                value.append(util_gen_random_str())
+                value.append(_mutate_value(util_gen_random_str(10)))
 
         nonce = ''.join(random.choices(string.ascii_uppercase + string.digits, k=5))
         key_list = list((data).keys())
@@ -199,7 +218,7 @@ def _mutate_change_key(data):
         
         key_part = key.split(".")
 
-        key_part[random.randint(0, len(key_part) - 1)] = util_gen_random_str()
+        key_part[random.randint(0, len(key_part) - 1)] = _mutate_value(util_gen_random_str(10))
         key = ".".join(key_part)
 
         data[key] = value
