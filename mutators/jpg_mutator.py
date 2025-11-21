@@ -103,6 +103,7 @@ def _mutate_lengths(segments: list[JpgSegment]) -> list[JpgSegment]:
 
 # mostly copy pasted from json_mutator
 def jpg_mutate(sample_input: bytes) -> bytes:
+
     if not globalVar.corpus:
         globalVar.corpus.append(sample_input)
     elif len(globalVar.corpus) > 20:

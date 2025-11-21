@@ -8,6 +8,8 @@ from mutators.csv_mutator import csv_mutate
 from mutators.json_mutator import mutate
 from flatten_dict import flatten, unflatten
 from mutators.jpg_mutator import jpg_mutate
+from mutators.elf_mutator import elf_mutate
+from mutators.pdf_mutator import pdf_mutate
 from colours import Colours
 import random
 
@@ -60,6 +62,16 @@ def detect_filetype(input_path: Path):
 
     if input_bytes.startswith(b"\xff\xd8\xff"):
         globalVar.filetype = 'jpg'
+        print(f"File type detected: {globalVar.filetype}")
+        return globalVar.filetype
+    
+    if input_bytes.startswith(b"\x7fELF"):
+        globalVar.filetype = 'elf'
+        print(f"File type detected: {globalVar.filetype}")
+        return globalVar.filetype
+    
+    if input_bytes.startswith(b"%PDF-"):
+        globalVar.filetype = 'pdf'
         print(f"File type detected: {globalVar.filetype}")
         return globalVar.filetype
 
@@ -125,6 +137,10 @@ def parser(input_path: Path, file_content: bytes, seed: int) -> bytes:
             except Exception as e:
                 print(f"{Colours.BOLD}{Colours.RED} Exception in jpg_mutate: `{e}` {Colours.RESET}")
                 return file_content
+        case "elf":
+            return elf_mutate(file_content, seed)
+        case "pdf":
+            return pdf_mutate(file_content)
         case _:
             # assume plaintext if no match
             parts = [file_content.decode(errors='ignore')]

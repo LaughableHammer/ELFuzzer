@@ -1,5 +1,7 @@
 FROM python:latest
 
+# TODO: pip install pyelftools
+
 COPY colours.py /
 COPY harness.py /
 COPY json_csv_mutator.py /
