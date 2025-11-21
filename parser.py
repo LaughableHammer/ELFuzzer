@@ -5,7 +5,7 @@ import globalVar
 import json, csv
 from lxml import etree
 from mutators.csv_mutator import csv_mutate
-from mutators.json_mutator import mutate
+from mutators.json_mutator import json_mutate
 from mutators.xml_mutator import xml_mutate
 from flatten_dict import flatten, unflatten
 from mutators.jpg_mutator import jpg_mutate
@@ -95,7 +95,7 @@ def rows_to_csv(rows: list[list[str]]) -> str:
 
 def json_parser(text: str) -> str:
     json_dict = flatten(json.loads(text), reducer="dot")
-    mutated = mutate(json_dict)
+    mutated = json_mutate(json_dict)
     return json.dumps(unflatten(mutated, splitter="dot"))
 
 def csv_parser(text: str) -> str:
